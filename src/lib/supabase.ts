@@ -4,8 +4,8 @@ import { Database } from '../types/database.types';
 import { logger } from './logger';
 
 // Environment variables validation
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 // Configuration constants
 const MAX_RETRIES = 1; // ✅ REDUCED: Only retry once to prevent long loading times
