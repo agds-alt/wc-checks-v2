@@ -7,6 +7,20 @@ import { UserRepository } from '@/infrastructure/database/repositories/UserRepos
 
 const userRepo = new UserRepository();
 
+// Demo mode check (untuk testing tanpa Supabase)
+const DEMO_MODE = !process.env.SUPABASE_URL || process.env.SUPABASE_URL.includes('your-project-id');
+
+// Demo user untuk testing
+const DEMO_USER = {
+  id: 'demo-user-123',
+  email: 'demo@test.com',
+  name: 'Demo User',
+  role: 90, // Admin role
+  organization_id: 'demo-org-123',
+  created_at: new Date(),
+  updated_at: new Date(),
+};
+
 export const authRouter = router({
   /**
    * Login with email/password
@@ -19,7 +33,30 @@ export const authRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      // Find user by email
+      // DEMO MODE: Return demo user untuk testing
+      if (DEMO_MODE) {
+        console.log('🎭 DEMO MODE: Using mock user (Supabase not configured)');
+
+        const token = await sessionService.createSession({
+          userId: DEMO_USER.id,
+          email: DEMO_USER.email,
+          role: DEMO_USER.role,
+          organizationId: DEMO_USER.organization_id,
+        });
+
+        return {
+          token,
+          user: {
+            id: DEMO_USER.id,
+            email: DEMO_USER.email,
+            name: DEMO_USER.name,
+            role: DEMO_USER.role,
+            organizationId: DEMO_USER.organization_id,
+          },
+        };
+      }
+
+      // PRODUCTION MODE: Query database
       const user = await userRepo.findByEmail(input.email);
 
       if (!user) {
@@ -57,6 +94,11 @@ export const authRouter = router({
    * Get current user
    */
   me: protectedProcedure.query(async ({ ctx }) => {
+    // DEMO MODE: Return demo user
+    if (DEMO_MODE) {
+      return DEMO_USER;
+    }
+
     const user = await userRepo.findById(ctx.user.userId);
 
     if (!user) {
