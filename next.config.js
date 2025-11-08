@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
 
   // Image optimization
   images: {
@@ -11,13 +10,6 @@ const nextConfig = {
         hostname: 'res.cloudinary.com',
       },
     ],
-  },
-
-  // Environment variables validation
-  experimental: {
-    serverActions: {
-      bodySizeLimit: '10mb',
-    },
   },
 
   // Disable x-powered-by header
