@@ -342,9 +342,9 @@ export function useBuildingStats(buildingId?: string) {
     queryFn: async () => {
       if (!buildingId) return null;
 
-      const { count, error } = await supabase
+      const { count, error } = await (supabase
         .from('locations')
-        .select('*', { count: 'exact', head: true })
+        .select('*', { count: 'exact', head: true }) as any)
         .eq('building_id', buildingId)
         .eq('is_active', true);
 

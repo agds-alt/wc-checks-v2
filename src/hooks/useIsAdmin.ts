@@ -1,6 +1,5 @@
 // src/hooks/useIsAdmin.ts - Check if current user is admin (BACKEND API WITH FALLBACK)
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
 import { useAuth } from './useAuth';
 
 interface VerifyRoleResponse {
