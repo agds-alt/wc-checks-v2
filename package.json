@@ -23,6 +23,7 @@
     "@trpc/next": "^10.45.2",
     "@trpc/react-query": "^10.45.2",
     "@trpc/server": "^10.45.2",
+    "@upstash/redis": "^1.35.6",
     "browser-image-compression": "^2.0.2",
     "cloudinary": "^2.8.0",
     "cloudinary-react": "^1.8.1",
