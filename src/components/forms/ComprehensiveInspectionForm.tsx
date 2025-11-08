@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { ArrowLeft, Save, CheckCircle2, AlertCircle, Camera } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, AlertCircle, Camera } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import {
   InspectionComponent,
