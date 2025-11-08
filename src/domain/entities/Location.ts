@@ -1,25 +1,48 @@
 // Domain Entity: Location (Toilet Location)
 export interface Location {
   id: string;
-  qr_code: string;
+  code: string;
   name: string;
-  floor?: string;
+  description: string | null;
+  floor: string | null;
+  section: string | null;
+  area: string | null;
+  coordinates: any | null; // JSON field for coordinates
+  qr_code: string | null;
+  photo_url: string | null;
   building_id: string;
-  created_by: string;
-  created_at: Date;
-  updated_at: Date;
+  organization_id: string;
+  is_active: boolean | null;
+  created_by: string | null;
+  created_at: Date | null;
+  updated_at: Date | null;
 }
 
 export interface CreateLocationInput {
-  qr_code: string;
+  code: string;
   name: string;
-  floor?: string;
+  description?: string | null;
+  floor?: string | null;
+  section?: string | null;
+  area?: string | null;
+  coordinates?: any | null;
+  qr_code?: string | null;
+  photo_url?: string | null;
   building_id: string;
-  created_by: string;
+  organization_id: string;
+  is_active?: boolean;
+  created_by?: string | null;
 }
 
 export interface UpdateLocationInput {
+  code?: string;
   name?: string;
-  floor?: string;
-  qr_code?: string;
+  description?: string | null;
+  floor?: string | null;
+  section?: string | null;
+  area?: string | null;
+  coordinates?: any | null;
+  qr_code?: string | null;
+  photo_url?: string | null;
+  is_active?: boolean;
 }

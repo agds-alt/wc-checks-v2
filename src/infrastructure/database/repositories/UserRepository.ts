@@ -29,13 +29,10 @@ export class UserRepository implements IUserRepository {
   }
 
   async findByOrganization(organizationId: string): Promise<User[]> {
-    const { data, error } = await this.supabase
-      .from('users')
-      .select('*')
-      .eq('organization_id', organizationId);
-
-    if (error || !data) return [];
-    return data.map(this.mapToEntity);
+    // Note: Users are no longer directly linked to organizations in the new schema
+    // This method is deprecated. Use UserRole relationships instead
+    console.warn('findByOrganization is deprecated - users are not directly linked to organizations');
+    return [];
   }
 
   async create(input: CreateUserInput): Promise<User> {
@@ -92,11 +89,15 @@ export class UserRepository implements IUserRepository {
     return {
       id: data.id,
       email: data.email,
-      name: data.name,
-      role: data.role,
-      organization_id: data.organization_id,
-      created_at: new Date(data.created_at),
-      updated_at: new Date(data.updated_at),
+      full_name: data.full_name,
+      phone: data.phone,
+      profile_photo_url: data.profile_photo_url,
+      is_active: data.is_active,
+      occupation_id: data.occupation_id,
+      password_hash: data.password_hash,
+      last_login_at: data.last_login_at ? new Date(data.last_login_at) : null,
+      created_at: data.created_at ? new Date(data.created_at) : null,
+      updated_at: data.updated_at ? new Date(data.updated_at) : null,
     };
   }
 }

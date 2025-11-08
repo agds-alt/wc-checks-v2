@@ -7,6 +7,26 @@ import { UserRepository } from '@/infrastructure/database/repositories/UserRepos
 
 const userRepo = new UserRepository();
 
+// Demo mode check (untuk testing tanpa Supabase)
+const DEMO_MODE = !process.env.SUPABASE_URL || process.env.SUPABASE_URL.includes('your-project-id');
+
+// Demo user untuk testing
+const DEMO_USER = {
+  id: 'demo-user-123',
+  email: 'demo@test.com',
+  full_name: 'Demo User',
+  phone: '+62812345678',
+  profile_photo_url: null,
+  is_active: true,
+  occupation_id: null,
+  password_hash: null,
+  last_login_at: new Date(),
+  created_at: new Date(),
+  updated_at: new Date(),
+};
+
+const DEMO_ROLE_LEVEL = 90; // Admin role level
+
 export const authRouter = router({
   /**
    * Login with email/password
@@ -19,7 +39,34 @@ export const authRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      // Find user by email
+      // DEMO MODE: Return demo user untuk testing
+      if (DEMO_MODE) {
+        console.log('🎭 DEMO MODE: Using mock user (Supabase not configured)');
+
+        const token = await sessionService.createSession({
+          userId: DEMO_USER.id,
+          email: DEMO_USER.email,
+          role: DEMO_ROLE_LEVEL,
+          organizationId: 'demo-org-123', // Mock organization ID for demo
+        });
+
+        return {
+          token,
+          user: {
+            id: DEMO_USER.id,
+            email: DEMO_USER.email,
+            full_name: DEMO_USER.full_name,
+            phone: DEMO_USER.phone,
+            profile_photo_url: DEMO_USER.profile_photo_url,
+            is_active: DEMO_USER.is_active,
+            occupation_id: DEMO_USER.occupation_id,
+            role: DEMO_ROLE_LEVEL,
+            organizationId: 'demo-org-123',
+          },
+        };
+      }
+
+      // PRODUCTION MODE: Query database
       const user = await userRepo.findByEmail(input.email);
 
       if (!user) {
@@ -31,14 +78,19 @@ export const authRouter = router({
 
       // TODO: Verify password with bcrypt
       // For now, we'll assume password is correct
-      // In production, you should use bcrypt.compare(input.password, user.password)
+      // In production, you should use bcrypt.compare(input.password, user.password_hash)
+
+      // TODO: Get user's role level from user_roles table
+      // For now, using default role level
+      const roleLevel = 0;
+      const organizationId = 'default-org'; // TODO: Get from user_roles or context
 
       // Create session
       const token = await sessionService.createSession({
         userId: user.id,
         email: user.email,
-        role: user.role,
-        organizationId: user.organization_id,
+        role: roleLevel,
+        organizationId: organizationId,
       });
 
       return {
@@ -46,9 +98,13 @@ export const authRouter = router({
         user: {
           id: user.id,
           email: user.email,
-          name: user.name,
-          role: user.role,
-          organizationId: user.organization_id,
+          full_name: user.full_name,
+          phone: user.phone,
+          profile_photo_url: user.profile_photo_url,
+          is_active: user.is_active,
+          occupation_id: user.occupation_id,
+          role: roleLevel,
+          organizationId: organizationId,
         },
       };
     }),
@@ -57,6 +113,11 @@ export const authRouter = router({
    * Get current user
    */
   me: protectedProcedure.query(async ({ ctx }) => {
+    // DEMO MODE: Return demo user
+    if (DEMO_MODE) {
+      return DEMO_USER;
+    }
+
     const user = await userRepo.findById(ctx.user.userId);
 
     if (!user) {
@@ -107,8 +168,8 @@ export const authRouter = router({
       z.object({
         email: z.string().email(),
         password: z.string().min(6),
-        name: z.string().min(2),
-        organizationId: z.string(),
+        full_name: z.string().min(2),
+        phone: z.string().optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -125,20 +186,28 @@ export const authRouter = router({
       // TODO: Hash password with bcrypt
       // const hashedPassword = await bcrypt.hash(input.password, 10);
 
+      // Generate user ID (Supabase uses UUID)
+      const userId = crypto.randomUUID();
+
       // Create user
       const user = await userRepo.create({
+        id: userId,
         email: input.email,
-        name: input.name,
-        role: 0, // Default role
-        organization_id: input.organizationId,
+        full_name: input.full_name,
+        phone: input.phone || null,
+        password_hash: input.password, // TODO: Hash this with bcrypt
       });
+
+      // TODO: Create default user role in user_roles table
+      const roleLevel = 0; // Default role level
+      const organizationId = 'default-org'; // TODO: Assign organization
 
       // Create session
       const token = await sessionService.createSession({
         userId: user.id,
         email: user.email,
-        role: user.role,
-        organizationId: user.organization_id,
+        role: roleLevel,
+        organizationId: organizationId,
       });
 
       return {
@@ -146,9 +215,13 @@ export const authRouter = router({
         user: {
           id: user.id,
           email: user.email,
-          name: user.name,
-          role: user.role,
-          organizationId: user.organization_id,
+          full_name: user.full_name,
+          phone: user.phone,
+          profile_photo_url: user.profile_photo_url,
+          is_active: user.is_active,
+          occupation_id: user.occupation_id,
+          role: roleLevel,
+          organizationId: organizationId,
         },
       };
     }),
