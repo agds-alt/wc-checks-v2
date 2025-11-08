@@ -15,7 +15,7 @@ import {
 import { PhotoWithMetadata as GeneralPhotoMetadata } from '../../types/photo.types';
 import { RatingSelector } from './RatingSelector';
 import { EnhancedPhotoUpload } from './EnhancedPhotoUpload'; // Per-component photos
-import { GeneralPhotoUpload, type GeneralPhotoUploadProps } from './GeneralPhotoUpload'; // General photos
+import { GeneralPhotoUpload } from './GeneralPhotoUpload'; // General photos
 import { InspectionSuccessModal } from './InspectionSuccessModal'; // Success modal
 import { InspectionFailedModal } from './InspectionFailedModal'; // Failed modal
 import { useAuth } from '../../hooks/useAuth';
