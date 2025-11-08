@@ -5,26 +5,8 @@
 
 import { supabase } from './supabase';
 import { TablesInsert, Json } from '../types/database.types';
+import { LocationFormData, LocationCoordinates } from '../types/location.types';
 import QRCode from 'qrcode';
-
-// Add index signature untuk compatibility dengan Json type
-export interface LocationCoordinates {
-  [key: string]: number; // Index signature untuk Json compatibility
-  lat: number;
-  lng: number;
-}
-
-export interface LocationFormData {
-  name: string;
-  code?: string | null;
-  building?: string | null;
-  floor?: string | null;
-  section?: string | null;
-  area?: string | null;
-  description?: string | null;
-  coordinates?: LocationCoordinates | null;
-  photo_url?: string | null;
-}
 
 export const createLocation = async (
   locationData: LocationFormData,
@@ -50,8 +32,9 @@ export const createLocation = async (
     const insertData: TablesInsert<'locations'> = {
       id: locationId,
       name: locationData.name,
-      code: locationData.code || null,
-      building: locationData.building || null,
+      code: locationData.code || '',
+      organization_id: locationData.organization_id,
+      building_id: locationData.building_id,
       floor: locationData.floor || null,
       section: locationData.section || null,
       area: locationData.area || null,
@@ -86,7 +69,8 @@ export const updateLocation = async (
     const updateData: Partial<TablesInsert<'locations'>> = {
       name: locationData.name,
       code: locationData.code,
-      building: locationData.building,
+      organization_id: locationData.organization_id,
+      building_id: locationData.building_id,
       floor: locationData.floor,
       section: locationData.section,
       area: locationData.area,
@@ -136,4 +120,41 @@ export const getLocationById = async (locationId: string) => {
     console.error('Error fetching location:', error);
     throw error;
   }
+};
+
+export const validateLocationData = (data: LocationFormData): { valid: boolean; errors: Record<string, string> } => {
+  const errors: Record<string, string> = {};
+
+  if (!data.name || data.name.trim() === '') {
+    errors.name = 'Nama lokasi harus diisi';
+  } else if (data.name.length > 100) {
+    errors.name = 'Nama lokasi maksimal 100 karakter';
+  }
+
+  if (!data.organization_id) {
+    errors.organization_id = 'Organisasi harus dipilih';
+  }
+
+  if (!data.building_id) {
+    errors.building_id = 'Gedung harus dipilih';
+  }
+
+  if (data.code && data.code.length > 50) {
+    errors.code = 'Kode lokasi maksimal 50 karakter';
+  }
+
+  if (data.coordinates) {
+    if (typeof data.coordinates.latitude !== 'number' || typeof data.coordinates.longitude !== 'number') {
+      errors.coordinates = 'Koordinat tidak valid';
+    } else if (data.coordinates.latitude < -90 || data.coordinates.latitude > 90) {
+      errors.coordinates = 'Latitude harus antara -90 dan 90';
+    } else if (data.coordinates.longitude < -180 || data.coordinates.longitude > 180) {
+      errors.coordinates = 'Longitude harus antara -180 dan 180';
+    }
+  }
+
+  return {
+    valid: Object.keys(errors).length === 0,
+    errors,
+  };
 };

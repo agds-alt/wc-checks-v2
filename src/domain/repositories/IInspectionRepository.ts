@@ -1,5 +1,6 @@
 // Repository Interface: Inspection
-import { Inspection, CreateInspectionInput, UpdateInspectionInput, InspectionComponent } from '../entities/Inspection';
+import { Inspection, CreateInspectionInput, UpdateInspectionInput } from '../entities/Inspection';
+import { InspectionComponent } from '../../types/inspection.types';
 
 export interface IInspectionRepository {
   findById(id: string): Promise<Inspection | null>;

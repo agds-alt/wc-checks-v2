@@ -55,7 +55,7 @@ export const InspectionSuccessModal = ({
             {/* Content */}
             <div className="relative z-10">
               <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full mb-4 shadow-xl">
-                <CheckCircle className="w-12 h-12 text-green-500" />
+                <CheckCircle className={`w-12 h-12 ${getScoreColor(score)}`} />
               </div>
 
               <h2 className="text-2xl font-bold text-white mb-2">

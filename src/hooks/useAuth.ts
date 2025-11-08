@@ -36,7 +36,7 @@ export function useAuth(): UseAuthReturn {
   const [user, setUser] = useState<AppUser | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, _setError] = useState<string | null>(null); // Error state reserved for future error handling
   const initRef = useRef(false); // ✅ Prevent double init
 
   // ⚡ Fast profile fetch with cache (profile data rarely changes)
@@ -51,9 +51,9 @@ export function useAuth(): UseAuthReturn {
 
       console.log('🔄 Fetching fresh profile...');
 
-      const { data, error: profileError } = await supabase
+      const { data, error: profileError } = await (supabase
         .from('users')
-        .select('id, email, full_name, is_active, occupation_id')
+        .select('id, email, full_name, is_active, occupation_id') as any)
         .eq('id', userId)
         .eq('is_active', true)
         .maybeSingle();
@@ -83,8 +83,8 @@ export function useAuth(): UseAuthReturn {
   // ✅ ONLY update last login on actual sign in
   const updateLastLogin = async (userId: string): Promise<void> => {
     try {
-      await supabase
-        .from('users')
+      await (supabase
+        .from('users') as any)
         .update({ last_login_at: new Date().toISOString() })
         .eq('id', userId);
       console.log('✅ Last login updated');

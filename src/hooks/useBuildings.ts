@@ -152,8 +152,8 @@ export function useBuildingByCode(shortCode?: string, organizationId?: string) {
       const result = await safeJsonParse(response);
       const buildings = result.data as Building[];
 
-      // Client-side filter by short_code
-      const building = buildings.find((b) => b.short_code === shortCode);
+      // Client-side filter by code
+      const building = buildings.find((b) => b.code === shortCode);
       return building || null;
     },
     enabled: !!shortCode,

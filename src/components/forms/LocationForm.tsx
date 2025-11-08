@@ -165,7 +165,7 @@ export function LocationForm({
           </option>
           {buildings?.map((building) => (
             <option key={building.id} value={building.id}>
-              {building.name} ({building.short_code})
+              {building.name} ({building.code})
             </option>
           ))}
         </select>
