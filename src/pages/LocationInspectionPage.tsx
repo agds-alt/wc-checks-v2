@@ -322,3 +322,4 @@ const RecentInspections = ({ locationId }: { locationId: string }) => {
     </Card>
   );
 };
+export default LocationInspectionPage;

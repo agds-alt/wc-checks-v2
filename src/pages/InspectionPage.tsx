@@ -20,3 +20,4 @@ export const InspectionPage = () => {
 
   return <ComprehensiveInspectionForm locationId={locationId} />;
 };
+export default InspectionPage;
