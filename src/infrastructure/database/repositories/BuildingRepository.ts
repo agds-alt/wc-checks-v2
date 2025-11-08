@@ -81,9 +81,14 @@ export class BuildingRepository implements IBuildingRepository {
     return {
       id: data.id,
       name: data.name,
+      code: data.code,
       address: data.address,
+      description: data.description,
+      type: data.type,
+      photo_url: data.photo_url,
       organization_id: data.organization_id,
       created_by: data.created_by,
+      is_active: data.is_active,
       created_at: new Date(data.created_at),
       updated_at: new Date(data.updated_at),
     };
