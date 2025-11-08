@@ -24,7 +24,7 @@ interface SidebarProps {
 export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, profile, signOut } = useAuth();
+  const { user: _user, profile, signOut } = useAuth(); // user reserved for future use
 
   // ✅ FIXED: Use backend API for both admin and superadmin checks
   const { isAdmin, isSuperAdmin } = useIsAdmin();

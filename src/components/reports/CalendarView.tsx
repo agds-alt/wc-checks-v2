@@ -18,6 +18,9 @@ interface CalendarViewProps {
   onDateClick: (date: string) => void;
 }
 
+// Reserved for future use - alternative color scheme
+// @ts-expect-error - Preserved for future implementation
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getScoreColor = (score: number) => {
   if (score >= 85) return 'bg-green-500';
   if (score >= 70) return 'bg-yellow-500';

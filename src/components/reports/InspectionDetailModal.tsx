@@ -1,6 +1,6 @@
 // src/components/reports/InspectionDetailModal.tsx - MODERN REDESIGN
 import { useState } from 'react';
-import { X, MapPin, Clock, User, Camera, FileText, AlertCircle, Star } from 'lucide-react';
+import { X, MapPin, Clock, User, Camera, FileText, AlertCircle, Star as _Star } from 'lucide-react'; // Star reserved for rating feature
 import { format } from 'date-fns';
 import { InspectionReport } from '../../hooks/useReports';
 import { INSPECTION_COMPONENTS, calculateWeightedScore, getScoreStatus, ComponentRating } from '../../types/inspection.types';

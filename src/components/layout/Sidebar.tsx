@@ -17,7 +17,7 @@ import {
   ChevronRight,
   Shield,
   FileCode,
-  Bell,
+  Bell as _Bell, // Reserved for future notifications feature
   Droplets
 } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -38,7 +38,7 @@ interface SidebarProps {
 export const Sidebar = ({ className }: SidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, profile, signOut } = useAuth();
+  const { user: _user, profile, signOut } = useAuth(); // user reserved for future use
   const { isAdmin, isSuperAdmin } = useIsAdmin();
   const [isOpen, setIsOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);

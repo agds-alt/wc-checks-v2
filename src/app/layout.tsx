@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+// import { Inter } from 'next/font/google'; // Temporarily disabled due to network issues
 import './globals.css';
 import { TRPCProvider } from '@/lib/trpc/Provider';
 import { Toaster } from 'sonner';
 
-const inter = Inter({ subsets: ['latin'] });
+// const inter = Inter({ subsets: ['latin'] }); // Temporarily using system fonts
 
 export const metadata: Metadata = {
   title: 'WC Check - Toilet Inspection System',
@@ -18,7 +18,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className="font-sans">
         <TRPCProvider>
           {children}
           <Toaster richColors position="top-right" />
