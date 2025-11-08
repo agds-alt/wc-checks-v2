@@ -87,7 +87,7 @@ export const LocationsManager = () => {
   };
 
   const getLocationURL = (id: string) => {
-    const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
     return `${baseUrl}/locations/${id}`;
   };
 

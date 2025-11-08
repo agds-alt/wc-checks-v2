@@ -45,7 +45,7 @@ export function useIsAdmin() {
         // ✅ BACKEND API ONLY - No direct database queries
         console.log('[useIsAdmin] 🔐 Getting token from localStorage for role verification...');
 
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
         const projectId = supabaseUrl.split('//')[1]?.split('.')[0];
 
         if (!projectId) {

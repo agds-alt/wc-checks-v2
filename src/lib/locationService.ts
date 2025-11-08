@@ -33,7 +33,7 @@ export const createLocation = async (
   try {
     // Generate QR code
     const locationId = crypto.randomUUID();
-    const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
     const qrDataUrl = `${baseUrl}/locations/${locationId}`;
     
     // Generate QR code as data URL
