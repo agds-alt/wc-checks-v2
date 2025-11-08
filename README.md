@@ -1,42 +1,66 @@
-# WC Check - Toilet Monitoring System
+# WC Check v2 - Toilet Inspection System
 
-Sistem monitoring kebersihan toilet yang efektif, efisien, dan mudah digunakan dengan teknologi QR Code scanning dan pelaporan real-time.
+Modern toilet inspection and maintenance tracking system built with Next.js, tRPC, Redis, and Domain-Driven Design.
 
-## 🌟 Features
+## 🚀 Features
 
-### Core Features
-- **QR Code Scanning** - Scan QR code lokasi toilet untuk memulai inspeksi
-- **Auto-Generated QR Codes** - Generate QR code otomatis untuk setiap lokasi toilet
-- **Smart Checklist** - UI checklist yang user-friendly dengan swipeable cards
-- **Photo Documentation** - Upload foto dengan timestamp otomatis (max 3 foto, min 1 foto)
-- **Real-time Calendar** - Lihat hasil inspeksi dalam tampilan kalender interaktif
-- **Location Management** - CRUD lokasi toilet dengan auto-generate QR
-- **User Management** - Multi-role system (Super Admin, Admin, User)
-- **PWA Support** - Installable sebagai aplikasi mobile
-- **Offline Capability** - Bekerja offline dengan service worker
+- ✅ **tRPC** - Type-safe End-to-end API
+- ✅ **Redis** - Session & Caching Layer
+- ✅ **JWT** - Stateless Authentication
+- ✅ **Domain-Driven Design (DDD)** - Clean Architecture
+- ✅ **Repository Pattern** - Data Access Layer
+- ✅ **Superjson** - Efficient Serialization
+- ✅ **Next.js 14** - App Router & Server Components
+- ✅ **TypeScript** - Full Type Safety
+- ✅ **Tailwind CSS** - Modern UI Styling
+- ✅ **Supabase** - PostgreSQL Database
+- ✅ **Cloudinary** - Image Storage
 
-### UI/UX Features
-- Mobile-first responsive design seperti Livin Mandiri
-- Warna tema hijau muda yang menenangkan
-- Bottom navigation dengan QR scanner di tengah
-- Swipeable cards untuk checklist
-- Haptic feedback pada interaksi
-- Smooth animations dengan Framer Motion
+## 📁 Project Structure (DDD)
 
-## 🚀 Tech Stack
+```
+src/
+├── domain/                  # Core business logic (entities, interfaces)
+│   ├── entities/           # Domain entities (User, Building, Inspection, etc.)
+│   └── repositories/       # Repository interfaces
+│
+├── infrastructure/         # External concerns & implementations
+│   ├── database/
+│   │   ├── supabase/      # Supabase client
+│   │   └── repositories/  # Repository implementations
+│   ├── cache/             # Redis cache service
+│   └── auth/              # JWT & session management
+│
+├── server/                # tRPC server
+│   ├── routers/           # tRPC routers (auth, user, etc.)
+│   └── trpc.ts            # tRPC configuration
+│
+├── app/                   # Next.js App Router
+│   ├── (auth)/           # Auth pages (login, register)
+│   ├── (dashboard)/      # Dashboard pages
+│   └── api/trpc/         # tRPC API endpoint
+│
+└── lib/                   # Utilities & shared code
+    └── trpc/              # tRPC client configuration
+```
 
-- **Frontend Framework:** Next.js 14 (App Router)
-- **Language:** TypeScript
-- **Database:** Supabase (PostgreSQL)
-- **Storage:** Cloudinary (untuk foto dan QR codes)
-- **Styling:** Tailwind CSS
-- **State Management:** Zustand
-- **Form Handling:** React Hook Form
-- **QR Scanner:** html5-qrcode
-- **QR Generator:** qrcode
-- **Date Handling:** date-fns
-- **Animation:** Framer Motion
-- **PWA:** next-pwa
+## 🔧 Tech Stack
+
+### Backend
+- **Next.js 14** - React framework with App Router
+- **tRPC** - Type-safe API layer
+- **Supabase** - PostgreSQL database
+- **Redis (ioredis)** - Session management & caching
+- **JWT (jose)** - Authentication tokens
+- **Superjson** - Data serialization
+
+### Frontend
+- **React 18** - UI library
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Styling
+- **React Query** - Data fetching (via tRPC)
+- **Zustand** - State management
+- **React Hook Form + Zod** - Form validation
 
 ## 📦 Installation
 
