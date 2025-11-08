@@ -1,0 +1,234 @@
+// src/components/mobile/Sidebar.tsx
+import { useNavigate, useLocation } from 'react-router-dom';
+import {
+  X,
+  MapPin,
+  FileText,
+  LogOut,
+  Building2,
+  Shield,
+  Settings,
+  HelpCircle,
+  Info,
+  BarChart3,
+  Users,
+} from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
+import { useIsAdmin } from '../../hooks/useIsAdmin';
+
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user, profile, signOut } = useAuth();
+
+  // ✅ FIXED: Use backend API for both admin and superadmin checks
+  const { isAdmin, isSuperAdmin } = useIsAdmin();
+
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    onClose();
+  };
+
+  const handleLogout = async () => {
+    const confirm = window.confirm('Apakah Anda yakin ingin keluar?');
+    if (confirm) {
+      await signOut();
+      navigate('/login');
+      onClose();
+    }
+  };
+
+  const menuItems = [
+    { icon: MapPin, label: 'Lokasi', path: '/locations', description: 'Daftar semua lokasi' },
+    { icon: FileText, label: 'Laporan', path: '/reports', description: 'Riwayat inspeksi' },
+    { icon: BarChart3, label: 'Analitik', path: '/analytics', description: 'Statistik & wawasan' },
+    { icon: Settings, label: 'Pengaturan', path: '/settings', description: 'Preferensi aplikasi' },
+    { icon: HelpCircle, label: 'Bantuan & FAQ', path: '/help', description: 'Panduan penggunaan' },
+    { icon: Info, label: 'Tentang Aplikasi', path: '/about', description: 'Versi & informasi' },
+  ];
+
+  const adminMenuItems = [
+    { icon: Shield, label: 'Organisasi', path: '/admin/organizations', description: 'Kelola organisasi' },
+    { icon: Building2, label: 'Gedung', path: '/admin/buildings', description: 'Kelola gedung' },
+    { icon: MapPin, label: 'Kelola Lokasi', path: '/admin/locations', description: 'CRUD lokasi admin' },
+  ];
+
+  const superAdminMenuItems = [
+    { icon: Users, label: 'User Management', path: '/superadmin/user-management', description: 'Manage users & roles' },
+  ];
+
+  const isActive = (path: string) => location.pathname === path;
+
+  if (!isOpen) return null;
+
+  return (
+    <>
+      {/* Overlay */}
+      <div
+        className="fixed inset-0 bg-black/50 z-40 transition-opacity"
+        onClick={onClose}
+      />
+
+      {/* Sidebar */}
+      <div className="fixed inset-y-0 left-0 w-[85vw] max-w-sm bg-white z-50 shadow-2xl transform transition-transform">
+        {/* Header */}
+        <div className="bg-white border-b border-gray-100 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900">Menu</h2>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+            >
+              <X className="w-6 h-6 text-gray-600" />
+            </button>
+          </div>
+
+          {/* User Info */}
+          {profile && (
+            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                <span className="text-lg font-bold text-white">
+                  {profile.full_name?.charAt(0).toUpperCase() || 'U'}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-gray-900 truncate">
+                  {profile.full_name}
+                </div>
+                <div className="text-xs text-gray-500 truncate">
+                  {profile.email}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Menu Items */}
+        <div className="p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-280px)]">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const active = isActive(item.path);
+
+            return (
+              <button
+                key={item.path}
+                onClick={() => handleNavigate(item.path)}
+                className={`
+                  w-full flex items-center gap-3 p-4 rounded-xl transition-all
+                  ${active
+                    ? 'bg-blue-50 text-blue-600 shadow-sm'
+                    : 'text-gray-700 hover:bg-gray-50'
+                  }
+                `}
+              >
+                <Icon className={`w-5 h-5 ${active ? 'text-blue-600' : 'text-gray-400'}`} />
+                <div className="flex-1 text-left">
+                  <div className="font-medium">{item.label}</div>
+                  {item.description && (
+                    <div className="text-xs text-gray-500 mt-0.5">
+                      {item.description}
+                    </div>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+
+          {/* Admin Section */}
+          {isAdmin && (
+            <>
+              <div className="pt-4 pb-2">
+                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4">
+                  Administrator
+                </div>
+              </div>
+              {adminMenuItems.map((item) => {
+                const Icon = item.icon;
+                const active = isActive(item.path);
+
+                return (
+                  <button
+                    key={item.path}
+                    onClick={() => handleNavigate(item.path)}
+                    className={`
+                      w-full flex items-center gap-3 p-4 rounded-xl transition-all
+                      ${active
+                        ? 'bg-purple-50 text-purple-600 shadow-sm'
+                        : 'text-gray-700 hover:bg-gray-50'
+                      }
+                    `}
+                  >
+                    <Icon className={`w-5 h-5 ${active ? 'text-purple-600' : 'text-gray-400'}`} />
+                    <div className="flex-1 text-left">
+                      <div className="font-medium">{item.label}</div>
+                      {item.description && (
+                        <div className="text-xs text-gray-500 mt-0.5">
+                          {item.description}
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </>
+          )}
+
+          {/* Superadmin Section */}
+          {isSuperAdmin && (
+            <>
+              <div className="pt-4 pb-2">
+                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4">
+                  Superadmin
+                </div>
+              </div>
+              {superAdminMenuItems.map((item) => {
+                const Icon = item.icon;
+                const active = isActive(item.path);
+
+                return (
+                  <button
+                    key={item.path}
+                    onClick={() => handleNavigate(item.path)}
+                    className={`
+                      w-full flex items-center gap-3 p-4 rounded-xl transition-all
+                      ${active
+                        ? 'bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 shadow-sm border border-purple-200'
+                        : 'text-gray-700 hover:bg-gray-50'
+                      }
+                    `}
+                  >
+                    <Icon className={`w-5 h-5 ${active ? 'text-purple-600' : 'text-gray-400'}`} />
+                    <div className="flex-1 text-left">
+                      <div className="font-medium">{item.label}</div>
+                      {item.description && (
+                        <div className="text-xs text-gray-500 mt-0.5">
+                          {item.description}
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </>
+          )}
+        </div>
+
+        {/* Footer - Logout */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 p-4 bg-white shadow-md border border-gray-100 rounded-xl font-medium text-red-600 hover:bg-red-50 transition-colors"
+          >
+            <LogOut className="w-5 h-5" />
+            <span>Keluar</span>
+          </button>
+        </div>
+      </div>
+    </>
+  );
+};

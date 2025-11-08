@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Favicon - supports both .ico and .png -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Proservice Indonesia - Inspection App</title>
+
+    <!-- ⚡ Performance Optimization: Preconnect to external resources -->
+    <!-- DNS prefetch: Resolve DNS early (fastest, least resource) -->
+    <link rel="dns-prefetch" href="https://api.cloudinary.com" />
+    <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+
+    <!-- Preconnect: Establish early connections (DNS + TCP + TLS) -->
+    <link rel="preconnect" href="https://api.cloudinary.com" crossorigin />
+    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
+
+    <!-- 📱 PWA: INSTALL ONLY (NO SERVICE WORKER, NO OFFLINE MODE) -->
+    <meta name="theme-color" content="#2563eb" />
+    <meta name="description" content="Professional toilet monitoring and inspection system" />
+
+    <!-- iOS PWA Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Proservice" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- Android PWA Support -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <link rel="manifest" href="/manifest.json" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
