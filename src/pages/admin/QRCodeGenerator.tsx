@@ -361,3 +361,4 @@ export const QRCodeGenerator = ({ locations, onClose }: QRCodeGeneratorProps) =>
     </div>
   );
 };
+export default QRCodeGenerator;
