@@ -2,7 +2,7 @@
 
 // tRPC Provider for Next.js App Router
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { httpBatchLink } from '@trpc/client';
+import { experimental_nextHttpLink } from '@trpc/next/app-dir/links/nextHttp';
 import { useState } from 'react';
 import superjson from 'superjson';
 import { trpc } from './client';
@@ -23,7 +23,8 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
   const [trpcClient] = useState(() =>
     trpc.createClient({
       links: [
-        httpBatchLink({
+        experimental_nextHttpLink({
+          batch: true,
           url: `${getBaseUrl()}/api/trpc`,
           transformer: superjson,
           headers() {
