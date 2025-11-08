@@ -1,6 +1,7 @@
 // Inspection Repository Implementation
 import { IInspectionRepository } from '@/domain/repositories/IInspectionRepository';
-import { Inspection, CreateInspectionInput, UpdateInspectionInput, InspectionComponent } from '@/domain/entities/Inspection';
+import { Inspection, CreateInspectionInput, UpdateInspectionInput } from '@/domain/entities/Inspection';
+import { InspectionComponent } from '@/types/inspection.types';
 import { getSupabaseServerClient } from '../supabase/client';
 
 export class InspectionRepository implements IInspectionRepository {

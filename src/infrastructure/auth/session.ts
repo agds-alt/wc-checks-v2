@@ -76,9 +76,9 @@ export class SessionService {
   /**
    * Delete all sessions for a user
    */
-  async deleteUserSessions(userId: string): Promise<void> {
+  async deleteUserSessions(_userId: string): Promise<void> {
     // This requires scanning Redis keys - implement if needed
-    // await cacheService.delPattern(`session:*${userId}*`);
+    // await cacheService.delPattern(`session:*${_userId}*`);
   }
 
   /**

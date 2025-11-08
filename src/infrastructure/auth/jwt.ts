@@ -56,7 +56,7 @@ export class JWTService {
         algorithms: [JWT_ALGORITHM],
       });
 
-      return payload as JWTPayload;
+      return payload as unknown as JWTPayload;
     } catch (error) {
       console.error('JWT verification failed:', error);
       return null;
