@@ -180,7 +180,7 @@ async function addScoreTablePage(
   const daysInMonth = getDaysInMonth(new Date(data.month + '-01'));
 
   // Split into two tables: 1-15 and 16-end
-  let startY = marginTop + 12;
+  const startY = marginTop + 12;
 
   // TABLE 1: Days 1-15
   const headers1 = ['Lokasi', 'Gedung', 'Lantai'];

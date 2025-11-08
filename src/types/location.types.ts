@@ -41,16 +41,16 @@ export interface LocationCoordinates {
 /**
  * Location display type with joined data from view
  * This is what you'll use in components
+ *
+ * Already includes from view:
+ * - id, name, code, qr_code
+ * - building_id, building_name, building_code, building_type
+ * - organization_id, organization_name, organization_code
+ * - floor, section, area
+ * - description, photo_url, coordinates
+ * - is_active, created_at, updated_at
  */
-export interface LocationDisplay extends LocationWithDetails {
-  // Already includes from view:
-  // - id, name, code, qr_code
-  // - building_id, building_name, building_code, building_type
-  // - organization_id, organization_name, organization_code
-  // - floor, section, area
-  // - description, photo_url, coordinates
-  // - is_active, created_at, updated_at
-}
+export type LocationDisplay = LocationWithDetails;
 
 /**
  * QR Code data structure

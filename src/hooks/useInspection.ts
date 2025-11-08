@@ -122,7 +122,7 @@ export const useInspection = (inspectionId?: string) => {
     retry: 1,
   });
 
-  const getLocation = (locationId: string) => useQuery({
+  const useGetLocation = (locationId: string) => useQuery({
     queryKey: ['location', locationId],
     queryFn: async () => {
       if (!locationId) throw new Error('Location ID is required');
@@ -368,7 +368,7 @@ export const useInspection = (inspectionId?: string) => {
     },
   });
 
-  const getLocationInspections = (locationId: string) => useQuery({
+  const useGetLocationInspections = (locationId: string) => useQuery({
     queryKey: ['location-inspections', locationId],
     queryFn: async () => {
       if (!locationId) return [];
@@ -398,8 +398,8 @@ export const useInspection = (inspectionId?: string) => {
   return {
     getInspection,
     getDefaultTemplate,
-    getLocation,
+    useGetLocation,
     submitInspection,
-    getLocationInspections,
+    useGetLocationInspections,
   };
 };

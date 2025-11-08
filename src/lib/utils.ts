@@ -85,7 +85,7 @@ export const compressImage = async (file: File, maxWidth = 1920, quality?: numbe
                 resolve(blob)
               } else {
                 // WebP didn't improve size, use JPEG
-                useJPEG()
+                tryJPEG()
               }
             },
             'image/webp',
@@ -93,7 +93,7 @@ export const compressImage = async (file: File, maxWidth = 1920, quality?: numbe
           )
         }
 
-        const useJPEG = () => {
+        const tryJPEG = () => {
           canvas.toBlob(
             (blob) => {
               if (blob) {
@@ -112,7 +112,7 @@ export const compressImage = async (file: File, maxWidth = 1920, quality?: numbe
         if (supportsWebP) {
           tryWebP()
         } else {
-          useJPEG()
+          tryJPEG()
         }
       }
       img.onerror = () => reject(new Error('Failed to load image'))

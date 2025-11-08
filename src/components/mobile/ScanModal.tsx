@@ -204,7 +204,7 @@ export const ScanModal = ({ isOpen, onClose, onScan }: ScanModalProps) => {
       const newTorchState = !torchEnabled;
 
       await track.applyConstraints({
-        // @ts-ignore - torch is not in standard types yet
+        // @ts-expect-error - torch is not in standard types yet
         advanced: [{ torch: newTorchState }],
       });
 

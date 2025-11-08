@@ -59,7 +59,7 @@ export const AdminRoute = ({ children }: AdminRouteProps) => {
 
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
           <p className="text-gray-600 mb-6">
-            You don't have permission to access admin pages. Admin privileges required.
+            You don&apos;t have permission to access admin pages. Admin privileges required.
           </p>
 
           <div className="flex gap-3">

@@ -125,7 +125,7 @@ export const InspectionFailedModal = ({
                   </>
                 )}
                 <li>• Data inspeksi lo udah kesimpen lokal</li>
-                <li>• Klik "Coba Lagi" kalo udah siap</li>
+                <li>• Klik &quot;Coba Lagi&quot; kalo udah siap</li>
               </ul>
             </div>
 

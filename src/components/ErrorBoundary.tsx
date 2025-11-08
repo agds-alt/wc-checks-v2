@@ -86,7 +86,7 @@ export class ErrorBoundary extends Component<Props, State> {
               </h2>
 
               <p className="text-gray-600 mb-4">
-                We've logged the error and will look into it. Please try reloading the page.
+                We&apos;ve logged the error and will look into it. Please try reloading the page.
               </p>
 
               {import.meta.env.DEV && this.state.error && (
