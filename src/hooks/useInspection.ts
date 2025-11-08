@@ -240,19 +240,19 @@ export const useInspection = (inspectionId?: string) => {
 
       const inspectionRecord: TablesInsert<'inspection_records'> = {
         location_id,
-        user_id,
+        inspector_id: user_id,
         template_id: templateId,
         inspection_date,
         inspection_time,
-        overall_status,
-        responses,
-        photo_urls: photo_urls.length > 0 ? photo_urls : null,
+        status: overall_status,
+        inspection_data: {
+          ...responses,
+          photo_urls: photo_urls.length > 0 ? photo_urls : []
+        } as any,
+        overall_rating: score,
         notes: notes?.trim() || null,
-        submitted_at,
-        duration_seconds: duration_seconds || null,
-        verification_notes: null,
-        verified_at: null,
-        verified_by: null,
+        created_at: submitted_at,
+        duration_minutes: duration_seconds ? Math.ceil(duration_seconds / 60) : null,
       };
 
       console.log('💾 [DB] Preparing to insert into database...');
@@ -373,17 +373,17 @@ export const useInspection = (inspectionId?: string) => {
     queryFn: async () => {
       if (!locationId) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase
         .from('inspection_records')
         .select(`
           *,
-          users:user_id (
+          users:inspector_id (
             full_name,
             email
           )
-        `)
+        `) as any)
         .eq('location_id', locationId)
-        .order('submitted_at', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) {
         logger.error('Failed to fetch location inspections', error);
