@@ -2,11 +2,11 @@
 import React, { useState, useRef } from 'react';
 import { Camera, X, Clock, AlertCircle, Image as ImageIcon } from 'lucide-react';
 import { format } from 'date-fns';
-import { PhotoWithMetadata } from '../../types/photo.types';
+import { GeneralPhotoData } from '../../types/photo.types';
 
 export interface GeneralPhotoUploadProps {
-  photos: PhotoWithMetadata[];
-  onPhotosChange: (photos: PhotoWithMetadata[]) => void;
+  photos: GeneralPhotoData[];
+  onPhotosChange: (photos: GeneralPhotoData[]) => void;
   maxPhotos?: number;
   genZMode?: boolean;
   locationName: string;
@@ -162,7 +162,7 @@ export const GeneralPhotoUpload: React.FC<GeneralPhotoUploadProps> = ({
 
       console.log(`🖼️ Final gallery file: ${cleanFileName} (${(watermarkedFile.size / 1024 / 1024).toFixed(2)}MB, clean WebP)`);
 
-      const photoMetadata: PhotoWithMetadata = {
+      const photoMetadata: GeneralPhotoData = {
         file: watermarkedFile,
         preview,
         timestamp: new Date().toISOString(),

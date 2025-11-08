@@ -24,6 +24,27 @@ export interface PhotoWithMetadata {
 }
 
 /**
+ * General photo type for documentation (no component association)
+ * This is a distinct type to avoid confusion with inspection.types.PhotoWithMetadata
+ */
+export interface GeneralPhotoData {
+  file: File;
+  preview: string; // blob URL for preview
+  timestamp: string;
+  geolocation?: {
+    latitude: number;
+    longitude: number;
+    accuracy?: number;
+  };
+  metadata?: {
+    inspectionId?: string;
+    locationId?: string;
+    fieldReference?: string;
+    caption?: string;
+  };
+}
+
+/**
  * Uploaded photo record from database
  * Type alias from database types
  */
