@@ -369,5 +369,3 @@ const createPhotoWithOverlay = async (
     }
   });
 };
-
-export type { PhotoWithMetadata };
