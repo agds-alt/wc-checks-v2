@@ -12,7 +12,7 @@ import {
   calculateWeightedScore,
   PhotoWithMetadata,
 } from '../../types/inspection.types';
-import { PhotoWithMetadata as GeneralPhotoMetadata } from '../../types/photo.types';
+import { GeneralPhotoData } from '../../types/photo.types';
 import { RatingSelector } from './RatingSelector';
 import { EnhancedPhotoUpload } from './EnhancedPhotoUpload'; // Per-component photos
 import { GeneralPhotoUpload } from './GeneralPhotoUpload'; // General photos
@@ -42,7 +42,7 @@ export const ComprehensiveInspectionForm = ({
   // Form state
   const [ratings, setRatings] = useState<Map<InspectionComponent, ComponentRating>>(new Map());
   const [photos, setPhotos] = useState<Map<InspectionComponent, PhotoWithMetadata[]>>(new Map()); // Per-component
-  const [generalPhotos, setGeneralPhotos] = useState<GeneralPhotoMetadata[]>([]); // General (mandatory)
+  const [generalPhotos, setGeneralPhotos] = useState<GeneralPhotoData[]>([]); // General (mandatory)
   const [generalNotes, setGeneralNotes] = useState('');
   const [issuesFound, setIssuesFound] = useState(false);
   const [issueDescription, setIssueDescription] = useState('');
@@ -594,7 +594,7 @@ const handleSubmit = async () => {
             </p>
 
             <GeneralPhotoUpload
-              photos={generalPhotos as GeneralPhotoMetadata[]}
+              photos={generalPhotos}
               onPhotosChange={setGeneralPhotos}
               maxPhotos={5}
               genZMode={genZMode}
