@@ -363,100 +363,6 @@ export const GeneralPhotoUpload = ({
   );
 };
 
-// ✅ Helper: Extract EXIF orientation from image file (SAFE - never fails)
-const getOrientation = (file: File): Promise<number> => {
-  return new Promise((resolve) => {
-    // Timeout protection - default to 1 after 3 seconds
-    const timeoutId = setTimeout(() => {
-      console.log('🏷️ [EXIF] Timeout - using default orientation');
-      resolve(1);
-    }, 3000);
-
-    try {
-      const reader = new FileReader();
-
-      reader.onload = (e) => {
-        try {
-          clearTimeout(timeoutId);
-
-          if (!e.target?.result) {
-            console.log('🏷️ [EXIF] No result - using default orientation');
-            return resolve(1);
-          }
-
-          const view = new DataView(e.target.result as ArrayBuffer);
-
-          // Check if JPEG (starts with 0xFFD8)
-          if (view.getUint16(0, false) !== 0xFFD8) {
-            console.log('🏷️ [EXIF] Not JPEG - using default orientation');
-            return resolve(1);
-          }
-
-          const length = view.byteLength;
-          let offset = 2;
-
-          while (offset < length) {
-            if (view.getUint16(offset + 2, false) <= 8) {
-              console.log('🏷️ [EXIF] Invalid marker size - using default orientation');
-              return resolve(1);
-            }
-
-            const marker = view.getUint16(offset, false);
-            offset += 2;
-
-            if (marker === 0xFFE1) {
-              // EXIF marker found
-              if (offset + 10 > length) return resolve(1);
-
-              const little = view.getUint16(offset + 8, false) === 0x4949;
-              offset += 18;
-
-              if (offset >= length) return resolve(1);
-
-              const tags = view.getUint16(offset - 2, little);
-
-              for (let i = 0; i < tags; i++) {
-                const entryOffset = offset + (i * 12);
-                if (entryOffset + 12 > length) break;
-
-                if (view.getUint16(entryOffset, little) === 0x0112) {
-                  const orientationValue = view.getUint16(entryOffset + 8, little);
-                  console.log(`🏷️ [EXIF] Found orientation: ${orientationValue}`);
-                  return resolve(orientationValue);
-                }
-              }
-            } else if ((marker & 0xFF00) !== 0xFF00) {
-              break;
-            } else {
-              if (offset >= length) break;
-              offset += view.getUint16(offset, false);
-            }
-          }
-
-          console.log('🏷️ [EXIF] No orientation tag - using default');
-          return resolve(1);
-        } catch (parseError) {
-          clearTimeout(timeoutId);
-          console.warn('🏷️ [EXIF] Parse error - using default orientation:', parseError);
-          resolve(1);
-        }
-      };
-
-      reader.onerror = () => {
-        clearTimeout(timeoutId);
-        console.warn('🏷️ [EXIF] Read error - using default orientation');
-        resolve(1);
-      };
-
-      reader.readAsArrayBuffer(file);
-    } catch (error) {
-      clearTimeout(timeoutId);
-      console.warn('🏷️ [EXIF] Exception - using default orientation:', error);
-      resolve(1);
-    }
-  });
-};
-
 // ✅ Watermark function - OPTIMIZED: Resize + Lower Quality + EXIF Fix
 const addWatermarkToPhoto = async (
   file: File,
@@ -467,10 +373,9 @@ const addWatermarkToPhoto = async (
   }
 ): Promise<Blob> => {
   console.log(`🏷️ [WATERMARK] Starting watermark for ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
-  const startTime = Date.now();
 
   // Skip EXIF for faster processing
-  const orientation = 1;
+  const orientation: number = 1;
 
   return new Promise((resolve, reject) => {
     const timeoutId = setTimeout(() => {
@@ -666,70 +571,6 @@ const addWatermarkToPhoto = async (
     };
 
     console.log(`🏷️ [WATERMARK] Reading file...`);
-    reader.readAsDataURL(file);
-  });
-};
-
-// Compress image to target size in MB
-const compressImage = async (file: File, targetMB: number): Promise<File> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-      const img = new Image();
-      img.src = e.target?.result as string;
-
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-
-        // Resize to max 1920px
-        let width = img.width;
-        let height = img.height;
-        const MAX = 1920;
-
-        if (width > MAX || height > MAX) {
-          if (width > height) {
-            height = (height / width) * MAX;
-            width = MAX;
-          } else {
-            width = (width / height) * MAX;
-            height = MAX;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          reject(new Error('Canvas context unavailable'));
-          return;
-        }
-
-        ctx.drawImage(img, 0, 0, width, height);
-
-        // Convert to blob with quality 0.8
-        canvas.toBlob(
-          (blob) => {
-            if (blob) {
-              const compressedFile = new File([blob], file.name, {
-                type: 'image/webp',
-                lastModified: Date.now()
-              });
-              resolve(compressedFile);
-            } else {
-              reject(new Error('Compression failed'));
-            }
-          },
-          'image/webp',
-          0.8
-        );
-      };
-
-      img.onerror = () => reject(new Error('Image load failed'));
-    };
-
-    reader.onerror = () => reject(new Error('File read failed'));
     reader.readAsDataURL(file);
   });
 };
