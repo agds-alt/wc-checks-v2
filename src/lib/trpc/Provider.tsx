@@ -2,7 +2,7 @@
 
 // tRPC Provider for Next.js App Router
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { experimental_nextHttpLink } from '@trpc/next/app-dir/links/nextHttp';
+import { httpLink } from '@trpc/client';
 import { useState } from 'react';
 import superjson from 'superjson';
 import { trpc } from './client';
@@ -23,10 +23,15 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
   const [trpcClient] = useState(() =>
     trpc.createClient({
       links: [
-        experimental_nextHttpLink({
-          batch: true,
+        httpLink({
           url: `${getBaseUrl()}/api/trpc`,
           transformer: superjson,
+          fetch(url, options) {
+            return fetch(url, {
+              ...options,
+              credentials: 'same-origin',
+            });
+          },
           headers() {
             // Get token from localStorage
             const token = typeof window !== 'undefined'
@@ -35,6 +40,7 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
 
             return {
               authorization: token ? `Bearer ${token}` : '',
+              'content-type': 'application/json',
             };
           },
         }),
