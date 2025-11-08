@@ -120,9 +120,13 @@ export const authRouter = router({
    * Get current user
    */
   me: protectedProcedure.query(async ({ ctx }) => {
-    // DEMO MODE: Return demo user
+    // DEMO MODE: Return demo user with role
     if (DEMO_MODE) {
-      return DEMO_USER;
+      return {
+        ...DEMO_USER,
+        role: DEMO_ROLE_LEVEL,
+        organizationId: 'demo-org-123',
+      };
     }
 
     const user = await userRepo.findById(ctx.user.userId);
@@ -134,7 +138,12 @@ export const authRouter = router({
       });
     }
 
-    return user;
+    // Return user with role and organizationId from context
+    return {
+      ...user,
+      role: ctx.user.role,
+      organizationId: ctx.user.organizationId,
+    };
   }),
 
   /**
