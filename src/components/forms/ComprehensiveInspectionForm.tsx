@@ -378,7 +378,6 @@ const handleSubmit = async () => {
     );
   }
 
-  const scoreStatus = getScoreStatus(currentScore);
   const completedCount = ratings.size;
   const totalRequired = INSPECTION_COMPONENTS.filter((c) => c.required).length;
   const progress = (completedCount / INSPECTION_COMPONENTS.length) * 100;
