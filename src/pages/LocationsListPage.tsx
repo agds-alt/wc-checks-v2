@@ -294,3 +294,5 @@ export const LocationsListPage = () => {
     </div>
   );
 };
+
+export default LocationsListPage;

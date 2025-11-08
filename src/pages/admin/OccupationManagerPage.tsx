@@ -414,3 +414,4 @@ export const OccupationManagerPage = () => {
     </div>
   );
 };
+export default OccupationManagerPage;

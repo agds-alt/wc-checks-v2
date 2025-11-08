@@ -421,3 +421,4 @@ export const ReportsPage = () => {
     </div>
   );
 };
+export default ReportsPage;

@@ -473,3 +473,4 @@ export const ProfilePageWithAdmin = () => {
     </div>
   );
 };
+export default ProfilePageWithAdmin;

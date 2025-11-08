@@ -583,3 +583,5 @@ export const AddLocationPage = () => {
     </div>
   );
 };
+
+export default AddLocationPage;

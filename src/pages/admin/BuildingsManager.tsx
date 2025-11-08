@@ -538,3 +538,5 @@ export const BuildingsManager = () => {
     </div>
   );
 };
+
+export default BuildingsManager;

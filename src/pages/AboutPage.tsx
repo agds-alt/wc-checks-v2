@@ -4,7 +4,7 @@ import { ArrowLeft, CheckCircle, Github, Globe, Mail, Database, Lock, Server, Sm
 import { Card } from '../components/ui/Card';
 import { BottomNav } from '../components/mobile/BottomNav';
 
-export const AboutPage = () => {
+const AboutPage = () => {
   const navigate = useNavigate();
 
   return (
@@ -739,3 +739,5 @@ export const AboutPage = () => {
     </div>
   );
 };
+
+export default AboutPage;

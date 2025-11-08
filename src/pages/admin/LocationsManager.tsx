@@ -1043,3 +1043,4 @@ const LocationFormModal = ({ location, onClose, onSuccess }: LocationFormModalPr
     </div>
   );
 };
+export default LocationsManager;

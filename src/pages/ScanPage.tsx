@@ -290,3 +290,4 @@ export const ScanPage = () => {
     </div>
   );
 };
+export default ScanPage;
