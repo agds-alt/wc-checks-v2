@@ -78,14 +78,16 @@ export default function DashboardPage() {
             <div className="px-4 py-8 sm:px-0">
               <div className="rounded-lg border-4 border-dashed border-gray-200 p-8">
                 <h2 className="text-xl font-semibold text-gray-900">
-                  Welcome, {user?.name}!
+                  Welcome, {user?.full_name}!
                 </h2>
                 <p className="mt-2 text-gray-600">
-                  Role: {user?.role >= 90 ? 'Admin' : user?.role >= 80 ? 'Manager' : user?.role >= 50 ? 'Inspector' : 'User'}
+                  Email: {user?.email}
                 </p>
-                <p className="mt-1 text-gray-600">
-                  Organization ID: {user?.organization_id}
-                </p>
+                {user?.phone && (
+                  <p className="mt-1 text-gray-600">
+                    Phone: {user?.phone}
+                  </p>
+                )}
 
                 <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   <DashboardCard

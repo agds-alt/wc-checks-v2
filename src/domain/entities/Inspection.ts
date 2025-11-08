@@ -1,42 +1,42 @@
-// Domain Entity: Inspection
+// Domain Entity: Inspection (renamed from inspection_records in DB)
 export interface Inspection {
   id: string;
   location_id: string;
   inspector_id: string;
-  inspection_date: Date;
-  overall_rating: number;
-  notes?: string;
-  created_by: string;
-  created_at: Date;
-  updated_at: Date;
-}
-
-export interface InspectionComponent {
-  id: string;
-  inspection_id: string;
-  component_name: string;
-  rating: number;
-  notes?: string;
-  created_at: Date;
+  inspection_date: string; // ISO date string from DB
+  inspection_time: string; // ISO time string from DB
+  template_id: string | null;
+  inspection_data: any; // JSON field containing all inspection component data
+  overall_rating: number | null;
+  duration_minutes: number | null;
+  status: string | null;
+  notes: string | null;
+  created_at: Date | null;
+  updated_at: Date | null;
 }
 
 export interface CreateInspectionInput {
   location_id: string;
   inspector_id: string;
-  inspection_date: Date;
-  overall_rating: number;
-  notes?: string;
-  created_by: string;
-  components: Array<{
-    component_name: string;
-    rating: number;
-    notes?: string;
-  }>;
+  inspection_date?: string;
+  inspection_time?: string;
+  template_id?: string | null;
+  inspection_data: any;
+  overall_rating?: number | null;
+  duration_minutes?: number | null;
+  status?: string | null;
+  notes?: string | null;
 }
 
 export interface UpdateInspectionInput {
-  overall_rating?: number;
-  notes?: string;
+  inspection_date?: string;
+  inspection_time?: string;
+  template_id?: string | null;
+  inspection_data?: any;
+  overall_rating?: number | null;
+  duration_minutes?: number | null;
+  status?: string | null;
+  notes?: string | null;
 }
 
 // Inspection rating constants
