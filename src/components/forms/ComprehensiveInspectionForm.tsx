@@ -15,7 +15,7 @@ import {
 import { PhotoWithMetadata as GeneralPhotoMetadata } from '../../types/photo.types';
 import { RatingSelector } from './RatingSelector';
 import { EnhancedPhotoUpload } from './EnhancedPhotoUpload'; // Per-component photos
-import { GeneralPhotoUpload } from './GeneralPhotoUpload'; // General photos
+import { GeneralPhotoUpload, type GeneralPhotoUploadProps } from './GeneralPhotoUpload'; // General photos
 import { InspectionSuccessModal } from './InspectionSuccessModal'; // Success modal
 import { InspectionFailedModal } from './InspectionFailedModal'; // Failed modal
 import { useAuth } from '../../hooks/useAuth';
@@ -594,7 +594,7 @@ const handleSubmit = async () => {
             </p>
 
             <GeneralPhotoUpload
-              photos={generalPhotos}
+              photos={generalPhotos as GeneralPhotoMetadata[]}
               onPhotosChange={setGeneralPhotos}
               maxPhotos={5}
               genZMode={genZMode}
