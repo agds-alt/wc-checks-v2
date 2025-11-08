@@ -546,7 +546,7 @@ export const AboutPage = () => {
                   <li>✓ Row Level Security (RLS) di database level</li>
                   <li>✓ API middleware untuk validasi auth token & role checking</li>
                   <li>✓ Input validation dengan Zod schema</li>
-                  <li>✓ XSS protection melalui React's built-in sanitization</li>
+                  <li>✓ XSS protection melalui React&apos;s built-in sanitization</li>
                   <li>✓ HTTPS-only untuk production</li>
                   <li>✓ CORS configuration untuk API endpoints</li>
                   <li>✓ Audit logging untuk compliance</li>
@@ -638,7 +638,7 @@ export const AboutPage = () => {
               <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-medium text-gray-800">Lazy Loading</p>
-                <p className="text-xs text-gray-600">Code splitting per page, load only what's needed</p>
+                <p className="text-xs text-gray-600">Code splitting per page, load only what&apos;s needed</p>
               </div>
             </div>
             <div className="flex items-start gap-2">
