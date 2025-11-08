@@ -105,14 +105,14 @@ export default function DashboardPage() {
                     description="Manage buildings"
                     href="/buildings"
                   />
-                  {user?.role >= 80 && (
+                  {(user?.role ?? 0) >= 80 && (
                     <DashboardCard
                       title="Reports"
                       description="View inspection reports and analytics"
                       href="/reports"
                     />
                   )}
-                  {user?.role >= 90 && (
+                  {(user?.role ?? 0) >= 90 && (
                     <>
                       <DashboardCard
                         title="Users"
