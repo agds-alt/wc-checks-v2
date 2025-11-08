@@ -190,7 +190,7 @@ export const useInspection = (inspectionId?: string) => {
 
       try {
         // Get token from localStorage (same as later in the code)
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
         const projectId = supabaseUrl.split('//')[1]?.split('.')[0];
         const storageKey = `sb-${projectId}-auth-token`;
         const sessionStr = localStorage.getItem(storageKey);
@@ -294,7 +294,7 @@ export const useInspection = (inspectionId?: string) => {
         console.log('🔐 Getting token from localStorage...');
 
         // Get Supabase project ID from URL
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
         const projectId = supabaseUrl.split('//')[1]?.split('.')[0];
 
         if (!projectId) {

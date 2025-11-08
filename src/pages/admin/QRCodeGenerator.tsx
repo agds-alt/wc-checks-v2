@@ -20,10 +20,10 @@ export const QRCodeGenerator = ({ locations, onClose }: QRCodeGeneratorProps) =>
   // FIXED: Prioritize production URL
   const getLocationURL = (id: string) => {
     const productionUrl = 'https://wc-checks.vercel.app';
-    const envUrl = import.meta.env.VITE_APP_URL;
+    const envUrl = process.env.NEXT_PUBLIC_APP_URL;
 
     // Use production URL if not in dev mode
-    const baseUrl = import.meta.env.DEV ? (envUrl || window.location.origin) : productionUrl;
+    const baseUrl = process.env.NODE_ENV !== 'production' ? (envUrl || window.location.origin) : productionUrl;
 
     return `${baseUrl}/locations/${id}`;
   };

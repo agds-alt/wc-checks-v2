@@ -327,8 +327,8 @@ export const processAndUploadImage = async (
 // Generate QR code URL
 export const generateQRUrl = (locationId: string) => {
   const productionUrl = 'https://wc-checks.vercel.app';
-  const baseUrl = import.meta.env.DEV 
-    ? (import.meta.env.VITE_APP_URL || 'http://localhost:5173')
+  const baseUrl = process.env.NODE_ENV !== 'production'
+    ? (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000')
     : productionUrl;
   return `${baseUrl}/locations/${locationId}`;
 }
