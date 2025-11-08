@@ -3,21 +3,13 @@ import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
 import { appRouter } from '@/server/routers/_app';
 import { createContext } from '@/server/trpc';
 
-const handler = async (req: Request) => {
+const handler = (req: Request) => {
+  // Log request info without consuming body
   console.log('🔍 tRPC Request:', {
     url: req.url,
     method: req.method,
-    headers: Object.fromEntries(req.headers.entries()),
+    contentType: req.headers.get('content-type'),
   });
-
-  // Try to read and log body
-  const clonedReq = req.clone();
-  try {
-    const body = await clonedReq.text();
-    console.log('🔍 Request Body:', body);
-  } catch (e) {
-    console.log('🔍 Could not read body:', e);
-  }
 
   return fetchRequestHandler({
     endpoint: '/api/trpc',
