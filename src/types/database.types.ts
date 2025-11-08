@@ -17,42 +17,45 @@ export type Database = {
       buildings: {
         Row: {
           address: string | null
-          created_at: string
+          code: string
+          created_at: string | null
           created_by: string | null
+          description: string | null
           id: string
-          is_active: boolean
+          is_active: boolean | null
           name: string
           organization_id: string
-          short_code: string
-          total_floors: number | null
+          photo_url: string | null
           type: string | null
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
           address?: string | null
-          created_at?: string
+          code: string
+          created_at?: string | null
           created_by?: string | null
+          description?: string | null
           id?: string
-          is_active?: boolean
+          is_active?: boolean | null
           name: string
           organization_id: string
-          short_code: string
-          total_floors?: number | null
+          photo_url?: string | null
           type?: string | null
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
           address?: string | null
-          created_at?: string
+          code?: string
+          created_at?: string | null
           created_by?: string | null
+          description?: string | null
           id?: string
-          is_active?: boolean
+          is_active?: boolean | null
           name?: string
           organization_id?: string
-          short_code?: string
-          total_floors?: number | null
+          photo_url?: string | null
           type?: string | null
-          updated_at?: string
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -73,57 +76,58 @@ export type Database = {
       }
       inspection_records: {
         Row: {
-          duration_seconds: number | null
+          created_at: string | null
+          duration_minutes: number | null
           id: string
+          inspection_data: Json
           inspection_date: string
           inspection_time: string
+          inspector_id: string
           location_id: string
           notes: string | null
-          overall_status: string
-          photo_urls: string[] | null
-          responses: Json
-          submitted_at: string | null
-          template_id: string
-          user_id: string
-          verification_notes: string | null
-          verified_at: string | null
-          verified_by: string | null
+          overall_rating: number | null
+          status: string | null
+          template_id: string | null
+          updated_at: string | null
         }
         Insert: {
-          duration_seconds?: number | null
+          created_at?: string | null
+          duration_minutes?: number | null
           id?: string
-          inspection_date: string
-          inspection_time: string
-          location_id: string
-          notes?: string | null
-          overall_status: string
-          photo_urls?: string[] | null
-          responses: Json
-          submitted_at?: string | null
-          template_id: string
-          user_id: string
-          verification_notes?: string | null
-          verified_at?: string | null
-          verified_by?: string | null
-        }
-        Update: {
-          duration_seconds?: number | null
-          id?: string
+          inspection_data: Json
           inspection_date?: string
           inspection_time?: string
+          inspector_id: string
+          location_id: string
+          notes?: string | null
+          overall_rating?: number | null
+          status?: string | null
+          template_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          duration_minutes?: number | null
+          id?: string
+          inspection_data?: Json
+          inspection_date?: string
+          inspection_time?: string
+          inspector_id?: string
           location_id?: string
           notes?: string | null
-          overall_status?: string
-          photo_urls?: string[] | null
-          responses?: Json
-          submitted_at?: string | null
-          template_id?: string
-          user_id?: string
-          verification_notes?: string | null
-          verified_at?: string | null
-          verified_by?: string | null
+          overall_rating?: number | null
+          status?: string | null
+          template_id?: string | null
+          updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "inspection_records_inspector_id_fkey"
+            columns: ["inspector_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "inspection_records_location_id_fkey"
             columns: ["location_id"]
@@ -145,58 +149,44 @@ export type Database = {
             referencedRelation: "inspection_templates"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "inspection_records_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "inspection_records_verified_by_fkey"
-            columns: ["verified_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
         ]
       }
       inspection_templates: {
         Row: {
+          config: Json
           created_at: string | null
           created_by: string | null
           description: string | null
-          estimated_time: number | null
-          fields: Json
           id: string
           is_active: boolean | null
           is_default: boolean | null
           name: string
           updated_at: string | null
+          version: string | null
         }
         Insert: {
+          config: Json
           created_at?: string | null
           created_by?: string | null
           description?: string | null
-          estimated_time?: number | null
-          fields: Json
           id?: string
           is_active?: boolean | null
           is_default?: boolean | null
           name: string
           updated_at?: string | null
+          version?: string | null
         }
         Update: {
+          config?: Json
           created_at?: string | null
           created_by?: string | null
           description?: string | null
-          estimated_time?: number | null
-          fields?: Json
           id?: string
           is_active?: boolean | null
           is_default?: boolean | null
           name?: string
           updated_at?: string | null
+          version?: string | null
         }
         Relationships: [
           {
@@ -211,9 +201,8 @@ export type Database = {
       locations: {
         Row: {
           area: string | null
-          building: string | null
           building_id: string
-          code: string | null
+          code: string
           coordinates: Json | null
           created_at: string | null
           created_by: string | null
@@ -224,15 +213,14 @@ export type Database = {
           name: string
           organization_id: string
           photo_url: string | null
-          qr_code: string
+          qr_code: string | null
           section: string | null
           updated_at: string | null
         }
         Insert: {
           area?: string | null
-          building?: string | null
           building_id: string
-          code?: string | null
+          code: string
           coordinates?: Json | null
           created_at?: string | null
           created_by?: string | null
@@ -243,15 +231,14 @@ export type Database = {
           name: string
           organization_id: string
           photo_url?: string | null
-          qr_code: string
+          qr_code?: string | null
           section?: string | null
           updated_at?: string | null
         }
         Update: {
           area?: string | null
-          building?: string | null
           building_id?: string
-          code?: string | null
+          code?: string
           coordinates?: Json | null
           created_at?: string | null
           created_by?: string | null
@@ -262,7 +249,7 @@ export type Database = {
           name?: string
           organization_id?: string
           photo_url?: string | null
-          qr_code?: string
+          qr_code?: string | null
           section?: string | null
           updated_at?: string | null
         }
@@ -293,42 +280,45 @@ export type Database = {
       organizations: {
         Row: {
           address: string | null
-          created_at: string
+          code: string
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string | null
           created_by: string | null
-          email: string | null
+          description: string | null
           id: string
-          is_active: boolean
+          is_active: boolean | null
           logo_url: string | null
           name: string
-          phone: string | null
-          short_code: string
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
           address?: string | null
-          created_at?: string
+          code: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
           created_by?: string | null
-          email?: string | null
+          description?: string | null
           id?: string
-          is_active?: boolean
+          is_active?: boolean | null
           logo_url?: string | null
           name: string
-          phone?: string | null
-          short_code: string
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
           address?: string | null
-          created_at?: string
+          code?: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
           created_by?: string | null
-          email?: string | null
+          description?: string | null
           id?: string
-          is_active?: boolean
+          is_active?: boolean | null
           logo_url?: string | null
           name?: string
-          phone?: string | null
-          short_code?: string
-          updated_at?: string
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -343,62 +333,62 @@ export type Database = {
       photos: {
         Row: {
           caption: string | null
+          cloudinary_public_id: string
+          cloudinary_url: string
+          component_name: string | null
           created_at: string | null
-          created_by: string | null
+          created_by: string
           deleted_at: string | null
-          deleted_by: string | null
-          field_reference: string | null
-          file_name: string | null
-          file_size: number | null
-          file_url: string
+          file_size_bytes: number | null
+          format: string | null
+          height: number | null
           id: string
-          inspection_id: string | null
+          inspection_id: string
           is_deleted: boolean | null
-          location_id: string | null
-          mime_type: string | null
-          updated_at: string | null
-          updated_by: string | null
+          location_id: string
+          thumbnail_url: string | null
+          width: number | null
         }
         Insert: {
           caption?: string | null
+          cloudinary_public_id: string
+          cloudinary_url: string
+          component_name?: string | null
           created_at?: string | null
-          created_by?: string | null
+          created_by: string
           deleted_at?: string | null
-          deleted_by?: string | null
-          field_reference?: string | null
-          file_name?: string | null
-          file_size?: number | null
-          file_url: string
+          file_size_bytes?: number | null
+          format?: string | null
+          height?: number | null
           id?: string
-          inspection_id?: string | null
+          inspection_id: string
           is_deleted?: boolean | null
-          location_id?: string | null
-          mime_type?: string | null
-          updated_at?: string | null
-          updated_by?: string | null
+          location_id: string
+          thumbnail_url?: string | null
+          width?: number | null
         }
         Update: {
           caption?: string | null
+          cloudinary_public_id?: string
+          cloudinary_url?: string
+          component_name?: string | null
           created_at?: string | null
-          created_by?: string | null
+          created_by?: string
           deleted_at?: string | null
-          deleted_by?: string | null
-          field_reference?: string | null
-          file_name?: string | null
-          file_size?: number | null
-          file_url?: string
+          file_size_bytes?: number | null
+          format?: string | null
+          height?: number | null
           id?: string
-          inspection_id?: string | null
+          inspection_id?: string
           is_deleted?: boolean | null
-          location_id?: string | null
-          mime_type?: string | null
-          updated_at?: string | null
-          updated_by?: string | null
+          location_id?: string
+          thumbnail_url?: string | null
+          width?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: "photos_deleted_by_fkey"
-            columns: ["deleted_by"]
+            foreignKeyName: "photos_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
@@ -422,20 +412,6 @@ export type Database = {
             columns: ["location_id"]
             isOneToOne: false
             referencedRelation: "locations_with_details"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "photos_updated_by_fkey"
-            columns: ["updated_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "photos_uploaded_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -573,7 +549,7 @@ export type Database = {
           created_at?: string | null
           email: string
           full_name: string
-          id?: string
+          id: string
           is_active?: boolean | null
           last_login_at?: string | null
           occupation_id?: string | null
