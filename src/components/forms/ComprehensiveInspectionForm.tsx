@@ -208,7 +208,7 @@ const handleSubmit = async () => {
 
     // Collect all photos from per-component uploads
     const componentPhotos: File[] = [];
-    for (const [componentId, componentPhotoList] of photos.entries()) {
+    for (const [_componentId, componentPhotoList] of photos.entries()) {
       for (const photo of componentPhotoList) {
         componentPhotos.push(photo.file);
       }
