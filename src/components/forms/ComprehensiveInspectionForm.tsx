@@ -533,7 +533,20 @@ const handleSubmit = async () => {
                   <EnhancedPhotoUpload
                     componentId={component.id}
                     photos={componentPhotos}
-                    onPhotosChange={(newPhotos) => handlePhotosChange(component.id, newPhotos)}
+                    onPhotosChange={(newPhotos) => {
+                      // Transform photos to match inspection.types.ts PhotoWithMetadata
+                      const photosWithComponentId = newPhotos.map(p => ({
+                        file: p.file,
+                        preview: p.preview,
+                        componentId: component.id,
+                        timestamp: p.timestamp,
+                        geolocation: p.location ? {
+                          latitude: p.location.lat,
+                          longitude: p.location.lng
+                        } : undefined
+                      }));
+                      handlePhotosChange(component.id, photosWithComponentId);
+                    }}
                     genZMode={genZMode}
                   />
                 </div>
