@@ -33,7 +33,7 @@ export const ComprehensiveInspectionForm = ({
   const genZMode = true;
   const navigate = useNavigate();
   const { user, profile } = useAuth();
-  const { getLocation, submitInspection } = useInspection();
+  const { useGetLocation, submitInspection } = useInspection();
 
   // Refs for cleanup
   const isMountedRef = useRef(true);
@@ -67,7 +67,7 @@ export const ComprehensiveInspectionForm = ({
     INSPECTION_COMPONENTS[0].id
   );
 
-  const { data: location, isLoading: locationLoading } = getLocation(locationId);
+  const { data: location, isLoading: locationLoading } = useGetLocation(locationId);
 
   // Debug: Log when showSuccessModal changes
   useEffect(() => {
