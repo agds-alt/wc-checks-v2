@@ -54,7 +54,7 @@ export const authRouter = router({
           organizationId: 'demo-org-123', // Mock organization ID for demo
         });
 
-        return {
+        const response = {
           token,
           user: {
             id: DEMO_USER.id,
@@ -68,6 +68,9 @@ export const authRouter = router({
             organizationId: 'demo-org-123',
           },
         };
+
+        console.log('✅ Login successful, returning:', JSON.stringify(response, null, 2));
+        return response;
       }
 
       // PRODUCTION MODE: Query database
