@@ -3,7 +3,7 @@ import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
 import { appRouter } from '@/server/routers/_app';
 import { createContext } from '@/server/trpc';
 
-const handler = (req: Request) => {
+const handler = async (req: Request) => {
   // Log request info without consuming body
   console.log('🔍 tRPC Request:', {
     url: req.url,
@@ -11,7 +11,7 @@ const handler = (req: Request) => {
     contentType: req.headers.get('content-type'),
   });
 
-  return fetchRequestHandler({
+  const response = await fetchRequestHandler({
     endpoint: '/api/trpc',
     req,
     router: appRouter,
@@ -20,11 +20,15 @@ const handler = (req: Request) => {
       process.env.NODE_ENV === 'development'
         ? ({ path, error }) => {
             console.error(
-              `❌ tRPC failed on ${path ?? '<no-path>'}: ${error.message}`
+              `❌ tRPC failed on ${path ?? '<no-path>'}:`,
+              error
             );
           }
         : undefined,
   });
+
+  console.log('📤 tRPC Response status:', response.status);
+  return response;
 };
 
 export { handler as GET, handler as POST };
