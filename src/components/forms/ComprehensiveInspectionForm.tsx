@@ -533,7 +533,7 @@ const handleSubmit = async () => {
                   <EnhancedPhotoUpload
                     componentId={component.id}
                     photos={componentPhotos}
-                    onPhotosChange={(photos) => handlePhotosChange(component.id, photos)}
+                    onPhotosChange={(newPhotos) => handlePhotosChange(component.id, newPhotos)}
                     genZMode={genZMode}
                   />
                 </div>
