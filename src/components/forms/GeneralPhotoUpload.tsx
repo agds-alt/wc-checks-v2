@@ -1,10 +1,10 @@
 // src/components/forms/GeneralPhotoUpload.tsx - Direct upload (no client compression)
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { Camera, X, Clock, AlertCircle, Image as ImageIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { PhotoWithMetadata } from '../../types/photo.types';
 
-interface GeneralPhotoUploadProps {
+export interface GeneralPhotoUploadProps {
   photos: PhotoWithMetadata[];
   onPhotosChange: (photos: PhotoWithMetadata[]) => void;
   maxPhotos?: number;
@@ -12,13 +12,13 @@ interface GeneralPhotoUploadProps {
   locationName: string;
 }
 
-export const GeneralPhotoUpload = ({
+export const GeneralPhotoUpload: React.FC<GeneralPhotoUploadProps> = ({
   photos,
   onPhotosChange,
   maxPhotos = 5,
   genZMode = false,
   locationName,
-}: GeneralPhotoUploadProps) => {
+}) => {
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const [isProcessing, setIsProcessing] = useState(false);

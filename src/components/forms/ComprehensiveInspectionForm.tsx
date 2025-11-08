@@ -594,7 +594,7 @@ const handleSubmit = async () => {
             </p>
 
             <GeneralPhotoUpload
-              photos={generalPhotos}
+              photos={generalPhotos as GeneralPhotoMetadata[]}
               onPhotosChange={setGeneralPhotos}
               maxPhotos={5}
               genZMode={genZMode}
