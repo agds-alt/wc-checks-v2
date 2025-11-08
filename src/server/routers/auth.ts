@@ -38,7 +38,11 @@ export const authRouter = router({
         password: z.string().min(6),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      console.log('🔍 Login mutation called');
+      console.log('🔍 Input received:', JSON.stringify(input, null, 2));
+      console.log('🔍 Context:', JSON.stringify(ctx, null, 2));
+
       // DEMO MODE: Return demo user untuk testing
       if (DEMO_MODE) {
         console.log('🎭 DEMO MODE: Using mock user (Supabase not configured)');
