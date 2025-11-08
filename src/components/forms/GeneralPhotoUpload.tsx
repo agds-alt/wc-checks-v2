@@ -2,7 +2,7 @@
 import { useState, useRef } from 'react';
 import { Camera, X, Clock, AlertCircle, Image as ImageIcon } from 'lucide-react';
 import { format } from 'date-fns';
-import { PhotoWithMetadata } from '../../types/inspection.types';
+import { PhotoWithMetadata } from '../../types/photo.types';
 
 interface GeneralPhotoUploadProps {
   photos: PhotoWithMetadata[];
