@@ -1,7 +1,9 @@
+'use client';
+
 // src/components/mobile/Navbar.tsx
 import { QrCode, User, LogOut } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 
 interface NavbarProps {
   onScanClick?: () => void;
@@ -10,11 +12,11 @@ interface NavbarProps {
 
 export const Navbar = ({ onScanClick, showScanButton = true }: NavbarProps) => {
   const { user, signOut } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleLogout = async () => {
     await signOut();
-    navigate('/login');
+    router.push('/login');
   };
 
   const handleProfileClick = () => {

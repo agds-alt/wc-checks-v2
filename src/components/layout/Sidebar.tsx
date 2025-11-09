@@ -1,6 +1,9 @@
+'use client';
+
 // src/components/layout/Sidebar.tsx
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '../../hooks/useAuth';
 import { useIsAdmin } from '../../hooks/useIsAdmin';
 import {
@@ -36,8 +39,8 @@ interface SidebarProps {
 }
 
 export const Sidebar = ({ className }: SidebarProps) => {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
+  const pathname = usePathname();
   const { user: _user, profile, signOut } = useAuth(); // user reserved for future use
   const { isAdmin, isSuperAdmin } = useIsAdmin();
   const [isOpen, setIsOpen] = useState(false);
@@ -49,7 +52,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
   // Close sidebar on route change (mobile)
   useEffect(() => {
     setIsOpen(false);
-  }, [location.pathname]);
+  }, [pathname]);
 
   // Close on escape key
   useEffect(() => {
@@ -74,16 +77,16 @@ export const Sidebar = ({ className }: SidebarProps) => {
   ];
 
   const handleNavClick = (path: string) => {
-    navigate(path);
+    router.push(path);
   };
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/login');
+    router.push('/login');
   };
 
   const NavItemComponent = ({ item }: { item: NavItem }) => {
-    const isActive = location.pathname === item.path;
+    const isActive = pathname === item.path;
     const Icon = item.icon;
 
     return (
@@ -251,7 +254,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
             className={clsx(
               'w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all',
               'text-gray-700 hover:bg-gray-100',
-              location.pathname === '/profile' && 'bg-gray-100',
+              pathname === '/profile' && 'bg-gray-100',
               isCollapsed && 'justify-center px-2'
             )}
           >

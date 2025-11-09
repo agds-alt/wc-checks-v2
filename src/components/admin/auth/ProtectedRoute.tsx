@@ -1,5 +1,8 @@
+'use client';
+
 // src/components/auth/ProtectedRoute.tsx - Route Guard for Authenticated Users
-import { Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../hooks/useAuth';
 
 interface ProtectedRouteProps {
@@ -8,6 +11,14 @@ interface ProtectedRouteProps {
 
 export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
+  const router = useRouter();
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace('/login');
+    }
+  }, [user, loading, router]);
 
   // Show loading spinner while checking authentication
   if (loading) {
@@ -21,9 +32,16 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
 
-  // If not authenticated, redirect to login
+  // If not authenticated, show loading while redirecting
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting to login...</p>
+        </div>
+      </div>
+    );
   }
 
   // User is authenticated, render the protected content
@@ -33,6 +51,14 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 // Optional: Enhanced version with additional checks
 export const ProtectedRouteEnhanced = ({ children }: ProtectedRouteProps) => {
   const { user, profile, loading } = useAuth();
+  const router = useRouter();
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace('/login');
+    }
+  }, [user, loading, router]);
 
   if (loading) {
     return (
@@ -47,7 +73,14 @@ export const ProtectedRouteEnhanced = ({ children }: ProtectedRouteProps) => {
 
   // Not authenticated
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting to login...</p>
+        </div>
+      </div>
+    );
   }
 
   // Authenticated but profile not loaded yet (edge case)

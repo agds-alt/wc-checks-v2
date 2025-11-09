@@ -1,5 +1,7 @@
+'use client';
+
 // src/components/forms/InspectionSuccessModal.tsx
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { CheckCircle, Home, QrCode, TrendingUp } from 'lucide-react';
 
 interface InspectionSuccessModalProps {
@@ -13,7 +15,7 @@ export const InspectionSuccessModal = ({
   score,
   locationName,
 }: InspectionSuccessModalProps) => {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   if (!isOpen) return null;
 
@@ -87,7 +89,7 @@ export const InspectionSuccessModal = ({
 
             {/* Dashboard Button */}
             <button
-              onClick={() => navigate('/', { replace: true })}
+              onClick={() => router.replace('/')}
               className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 group"
             >
               <Home className="w-5 h-5 group-hover:scale-110 transition-transform" />
@@ -96,7 +98,7 @@ export const InspectionSuccessModal = ({
 
             {/* Scan Next Button */}
             <button
-              onClick={() => navigate('/scan', { replace: true })}
+              onClick={() => router.replace('/scan')}
               className="w-full bg-white hover:bg-gray-50 text-gray-700 py-4 rounded-xl font-semibold border-2 border-gray-200 hover:border-gray-300 transform hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 group"
             >
               <QrCode className="w-5 h-5 group-hover:scale-110 transition-transform" />

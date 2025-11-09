@@ -1,5 +1,8 @@
+'use client';
+
 // src/components/mobile/Sidebar.tsx
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import {
   X,
   MapPin,
@@ -22,15 +25,15 @@ interface SidebarProps {
 }
 
 export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
+  const pathname = usePathname();
   const { user: _user, profile, signOut } = useAuth(); // user reserved for future use
 
   // ✅ FIXED: Use backend API for both admin and superadmin checks
   const { isAdmin, isSuperAdmin } = useIsAdmin();
 
   const handleNavigate = (path: string) => {
-    navigate(path);
+    router.push(path);
     onClose();
   };
 
@@ -38,7 +41,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     const confirm = window.confirm('Apakah Anda yakin ingin keluar?');
     if (confirm) {
       await signOut();
-      navigate('/login');
+      router.push('/login');
       onClose();
     }
   };
@@ -62,7 +65,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     { icon: Users, label: 'User Management', path: '/superadmin/user-management', description: 'Manage users & roles' },
   ];
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => pathname === path;
 
   if (!isOpen) return null;
 

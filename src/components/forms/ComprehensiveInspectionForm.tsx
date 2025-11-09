@@ -1,6 +1,8 @@
+'use client';
+
 // src/components/forms/ComprehensiveInspectionForm.tsx - FINAL: Both photo types
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { ArrowLeft, CheckCircle2, AlertCircle, Camera } from 'lucide-react';
 import * as Icons from 'lucide-react';
@@ -31,7 +33,7 @@ export const ComprehensiveInspectionForm = ({
 }: ComprehensiveInspectionFormProps) => {
   // Use Indonesian mode for all users
   const genZMode = true;
-  const navigate = useNavigate();
+  const router = useRouter();
   const { user, profile } = useAuth();
   const { useGetLocation, submitInspection } = useInspection();
 
@@ -405,7 +407,7 @@ const handleSubmit = async () => {
         <div className="p-4">
           <div className="flex items-center justify-between mb-3">
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => router.back()}
               className={`p-2 rounded-xl ${
                 genZMode ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-700'
               }`}

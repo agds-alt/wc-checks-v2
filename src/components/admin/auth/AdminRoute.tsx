@@ -1,5 +1,8 @@
+'use client';
+
 // src/components/auth/AdminRoute.tsx - BACKEND VERIFIED VERSION
-import { Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../hooks/useAuth';
 import { useIsAdmin } from '../../../hooks/useIsAdmin';
 import { AlertTriangle, User } from 'lucide-react';
@@ -11,6 +14,14 @@ interface AdminRouteProps {
 export const AdminRoute = ({ children }: AdminRouteProps) => {
   const { user, profile, loading: authLoading } = useAuth();
   const { isAdmin, isSuperAdmin, loading: roleLoading } = useIsAdmin();
+  const router = useRouter();
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/login');
+    }
+  }, [user, authLoading, router]);
 
   // Loading state
   if (authLoading || roleLoading) {
@@ -26,7 +37,14 @@ export const AdminRoute = ({ children }: AdminRouteProps) => {
 
   // Not authenticated
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting to login...</p>
+        </div>
+      </div>
+    );
   }
 
   // Not authorized - Enhanced with profile info
