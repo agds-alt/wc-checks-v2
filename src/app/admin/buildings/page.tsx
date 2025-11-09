@@ -26,7 +26,7 @@ const buildingSchema = z.object({
   name: z.string()
     .min(2, 'Building name must be at least 2 characters')
     .max(255, 'Building name is too long'),
-  short_code: z.string()
+  code: z.string()
     .min(1, 'Short code is required')
     .max(10, 'Short code must be 10 characters or less')
     .regex(/^[A-Z0-9_]+$/, 'Short code must contain only uppercase letters, numbers, and underscores (NO hyphens)')
@@ -73,9 +73,9 @@ export default function BuildingsManager() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Form state
-  const [formData, setFormData] = useState<Partial<BuildingInsert>>({
+  const [formData, setFormData] = useState<Partial<BuildingInsert> & { total_floors?: number | null }>({
     name: '',
-    short_code: '',
+    code: '',
     organization_id: '',
     address: null,
     type: null,
@@ -92,7 +92,7 @@ export default function BuildingsManager() {
   // Filter buildings
   const filteredBuildings = buildings?.filter(building =>
     building.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    building.short_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    building.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
     building.address?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -104,7 +104,7 @@ export default function BuildingsManager() {
   const resetForm = () => {
     setFormData({
       name: '',
-      short_code: '',
+      code: '',
       organization_id: '',
       address: null,
       type: null,
@@ -118,11 +118,11 @@ export default function BuildingsManager() {
     setSelectedBuilding(building);
     setFormData({
       name: building.name,
-      short_code: building.short_code,
+      code: building.code,
       organization_id: building.organization_id,
       address: building.address,
       type: building.type,
-      total_floors: building.total_floors,
+      total_floors: (building as any).total_floors,
       is_active: building.is_active,
     });
     setIsFormOpen(true);
@@ -150,10 +150,15 @@ export default function BuildingsManager() {
       console.log('✅ Validation passed:', validatedData);
 
       if (selectedBuilding) {
-        // Update existing building
+        // Update existing building - map code to short_code for backend API
+        const updates = {
+          ...validatedData,
+          short_code: validatedData.code,
+        };
+        delete (updates as any).code;
         updateBuilding.mutate({
           buildingId: selectedBuilding.id,
-          updates: validatedData,
+          updates: updates as any,
         }, {
           onSuccess: () => {
             setIsFormOpen(false);
@@ -161,8 +166,13 @@ export default function BuildingsManager() {
           },
         });
       } else {
-        // Create new building
-        createBuilding.mutate(validatedData, {
+        // Create new building - map code to short_code for backend API
+        const buildingData = {
+          ...validatedData,
+          short_code: validatedData.code,
+        };
+        delete (buildingData as any).code;
+        createBuilding.mutate(buildingData as any, {
           onSuccess: () => {
             setIsFormOpen(false);
             resetForm();
@@ -310,7 +320,7 @@ export default function BuildingsManager() {
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-gray-900 truncate">{building.name}</h3>
                       <span className="inline-block mt-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">
-                        {building.short_code}
+                        {building.code}
                       </span>
                     </div>
                   </div>
@@ -325,7 +335,7 @@ export default function BuildingsManager() {
                   {/* Details */}
                   <div className="text-sm text-gray-600 space-y-1 mb-2">
                     {building.type && <p>🏗️ {building.type}</p>}
-                    {building.total_floors && <p>📊 {building.total_floors} lantai</p>}
+                    {(building as any).total_floors && <p>📊 {(building as any).total_floors} lantai</p>}
                     {building.address && <p className="truncate">📍 {building.address}</p>}
                   </div>
 
@@ -431,8 +441,8 @@ export default function BuildingsManager() {
                 </label>
                 <input
                   type="text"
-                  value={formData.short_code}
-                  onChange={(e) => setFormData({ ...formData, short_code: e.target.value.toUpperCase() })}
+                  value={formData.code}
+                  onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   placeholder="e.g., BLD01, TOWERA, GED_1"
                   maxLength={10}

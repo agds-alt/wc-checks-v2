@@ -150,12 +150,16 @@ export class InspectionRepository implements IInspectionRepository {
       id: data.id,
       location_id: data.location_id,
       inspector_id: data.inspector_id,
-      inspection_date: new Date(data.inspection_date),
+      inspection_date: data.inspection_date,
+      inspection_time: data.inspection_time,
+      template_id: data.template_id,
+      inspection_data: data.inspection_data,
       overall_rating: data.overall_rating,
+      duration_minutes: data.duration_minutes,
+      status: data.status,
       notes: data.notes,
-      created_by: data.created_by,
-      created_at: new Date(data.created_at),
-      updated_at: new Date(data.updated_at),
+      created_at: data.created_at ? new Date(data.created_at) : null,
+      updated_at: data.updated_at ? new Date(data.updated_at) : null,
     };
   }
 

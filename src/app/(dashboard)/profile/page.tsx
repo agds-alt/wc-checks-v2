@@ -52,7 +52,7 @@ export default function ProfilePage() {
       const { data, error } = await supabase
         .from('user_occupations')
         .select('*')
-        .eq('id', profile.occupation_id)
+        .filter('id', 'eq', profile.occupation_id)
         .single();
 
       if (error) {
@@ -72,7 +72,7 @@ export default function ProfilePage() {
       const { data, error } = await supabase
         .from('user_occupations')
         .select('*')
-        .eq('is_active', true)
+        .filter('is_active', 'eq', true)
         .order('display_name');
 
       if (error) {

@@ -81,7 +81,7 @@ export default function OccupationManagerPage() {
       const { error } = await supabase
         .from('user_occupations')
         .update(data)
-        .eq('id', id);
+        .filter('id', 'eq', id);
 
       if (error) throw error;
     },
@@ -102,7 +102,7 @@ export default function OccupationManagerPage() {
       const { error } = await supabase
         .from('user_occupations')
         .update({ is_active: false })
-        .eq('id', id);
+        .filter('id', 'eq', id);
 
       if (error) throw error;
     },
