@@ -2,11 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { Camera, X, Clock, AlertCircle, Image as ImageIcon } from 'lucide-react';
 import { format } from 'date-fns';
-<<<<<<< HEAD
 import { GeneralPhotoData } from '../../types/photo.types';
-=======
-import { PhotoWithMetadata } from '../../types/inspection.types';
->>>>>>> 5995ece (fuck)
 
 export interface GeneralPhotoUploadProps {
   photos: GeneralPhotoData[];

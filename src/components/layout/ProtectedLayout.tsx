@@ -1,5 +1,7 @@
+'use client';
+
 // src/components/layout/ProtectedLayout.tsx
-import { useLocation } from 'react-router-dom';
+import { usePathname } from 'next/navigation';
 import { BottomNav } from '../mobile/BottomNav';
 
 interface ProtectedLayoutProps {
@@ -7,13 +9,13 @@ interface ProtectedLayoutProps {
 }
 
 export const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
-  const location = useLocation();
-  
+  const pathname = usePathname();
+
   // Hide bottom nav di semua halaman inspection
   const showBottomNav = !(
-    location.pathname.includes('/inspect/') || 
-    location.pathname.includes('/locations/') && 
-    !location.pathname.includes('/admin/')
+    pathname.includes('/inspect/') ||
+    pathname.includes('/locations/') &&
+    !pathname.includes('/admin/')
   );
 
   return (

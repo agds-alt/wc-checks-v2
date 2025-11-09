@@ -1,6 +1,9 @@
+'use client';
+
 // src/components/mobile/BottomNavFixed.tsx - Fixed Bottom Navigation
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { Home, Calendar, QrCode, MapPin, User } from 'lucide-react';
 import { clsx } from 'clsx';
 import { ScanModal } from './ScanModal';
@@ -49,14 +52,14 @@ const navItems: NavItem[] = [
 ];
 
 export const BottomNav = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
+  const pathname = usePathname();
   const [scanModalOpen, setScanModalOpen] = useState(false);
   const haptic = useHaptic();
 
   const handleScanSuccess = (locationId: string) => {
     setScanModalOpen(false);
-    navigate(`/inspect/${locationId}`);
+    router.push(`/inspect/${locationId}`);
   };
 
   return (
@@ -65,8 +68,8 @@ export const BottomNav = () => {
         <div className="flex items-center justify-around relative px-2 pt-2 pb-2">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.path ||
-                            (item.path !== '/' && location.pathname.startsWith(item.path));
+            const isActive = pathname === item.path ||
+                            (item.path !== '/' && pathname.startsWith(item.path));
 
             // Center Floating Action Button (FAB) - Direct to Scanner
             if (item.isCenter) {
@@ -103,7 +106,7 @@ export const BottomNav = () => {
               key={item.id}
               onClick={() => {
                 haptic.light();
-                navigate(item.path);
+                router.push(item.path);
               }}
               className={clsx(
                 'flex-1 flex flex-col items-center justify-center gap-1 py-2 px-2 rounded-xl transition-all duration-200',
@@ -149,8 +152,8 @@ export const BottomNav = () => {
 
 // Alternative: Minimal Bottom Nav (tanpa FAB, semua flat)
 export const BottomNavMinimal = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
+  const pathname = usePathname();
   const haptic = useHaptic();
 
   const minimalItems = [
@@ -166,15 +169,15 @@ export const BottomNavMinimal = () => {
       <div className="flex items-center justify-around py-1">
         {minimalItems.map((item, index) => {
           const Icon = item.icon;
-          const isActive = location.pathname === item.path || 
-                          (item.path !== '/' && location.pathname.startsWith(item.path));
+          const isActive = pathname === item.path ||
+                          (item.path !== '/' && pathname.startsWith(item.path));
 
           return (
             <button
               key={index}
               onClick={() => {
                 haptic.light();
-                navigate(item.path);
+                router.push(item.path);
               }}
               className={clsx(
                 'flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all min-w-[60px]',
@@ -195,8 +198,8 @@ export const BottomNavMinimal = () => {
 
 // Livin-style Bottom Nav (dengan background gradient pada active item)
 export const BottomNavLivin = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
+  const pathname = usePathname();
   const haptic = useHaptic();
 
   const livinItems = [
@@ -212,7 +215,7 @@ export const BottomNavLivin = () => {
       <div className="flex items-center justify-around relative h-16 px-2">
         {livinItems.map((item, index) => {
           const Icon = item.icon;
-          const isActive = location.pathname === item.path;
+          const isActive = pathname === item.path;
 
           // Center FAB ala Livin
           if (item.isCenter) {
@@ -221,7 +224,7 @@ export const BottomNavLivin = () => {
                 <button
                   onClick={() => {
                     haptic.medium();
-                    navigate(item.path);
+                    router.push(item.path);
                   }}
                   className="
                     w-16 h-16
@@ -250,7 +253,7 @@ export const BottomNavLivin = () => {
               key={index}
               onClick={() => {
                 haptic.light();
-                navigate(item.path);
+                router.push(item.path);
               }}
               className="flex-1 flex flex-col items-center justify-center gap-1 h-full"
             >

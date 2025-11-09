@@ -1,5 +1,7 @@
+'use client';
+
 // src/components/admin/AdminCard.tsx - Navigation Card for Admin Dashboard
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { ChevronRight, LucideIcon } from 'lucide-react';
 
 interface AdminCardProps {
@@ -12,16 +14,16 @@ interface AdminCardProps {
   badge?: string;
 }
 
-export const AdminCard = ({ 
-  icon: Icon, 
-  title, 
-  description, 
-  path, 
+export const AdminCard = ({
+  icon: Icon,
+  title,
+  description,
+  path,
   color = 'blue',
   count,
   badge
 }: AdminCardProps) => {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const colorClasses = {
     blue: 'bg-blue-100 text-blue-600',
@@ -34,7 +36,7 @@ export const AdminCard = ({
 
   return (
     <button
-      onClick={() => navigate(path)}
+      onClick={() => router.push(path)}
       className="
         relative w-full p-6 bg-white rounded-2xl shadow-sm border border-gray-100
         hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]
@@ -83,13 +85,13 @@ export const AdminCard = ({
 };
 
 // Compact version for grid layouts
-export const AdminCardCompact = ({ 
-  icon: Icon, 
-  title, 
-  path, 
-  color = 'blue' 
+export const AdminCardCompact = ({
+  icon: Icon,
+  title,
+  path,
+  color = 'blue'
 }: Pick<AdminCardProps, 'icon' | 'title' | 'path' | 'color'>) => {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const colorClasses = {
     blue: 'bg-blue-500',
@@ -102,7 +104,7 @@ export const AdminCardCompact = ({
 
   return (
     <button
-      onClick={() => navigate(path)}
+      onClick={() => router.push(path)}
       className="
         w-full p-4 bg-white rounded-xl shadow-sm border border-gray-100
         hover:shadow-md hover:scale-105 active:scale-95
