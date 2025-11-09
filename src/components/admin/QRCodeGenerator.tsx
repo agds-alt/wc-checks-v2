@@ -48,16 +48,16 @@ export const QRCodeGenerator = ({ locations, onClose }: QRCodeGeneratorProps) =>
         }
       }
     `,
-    onBeforeGetContent: () => {
-      console.log('🖨️ Preparing to print...', { locations: locations.length });
-      return Promise.resolve();
-    },
-    onAfterPrint: () => {
-      console.log('✅ Print completed');
-    },
-    onPrintError: (error) => {
-      console.error('❌ Print error:', error);
-    },
+    // onBeforeGetContent: () => {
+    //   console.log('🖨️ Preparing to print...', { locations: locations.length });
+    //   return Promise.resolve();
+    // },
+    // onAfterPrint: () => {
+    //   console.log('✅ Print completed');
+    // },
+    // onPrintError: (error) => {
+    //   console.error('❌ Print error:', error);
+    // },
   });
 
   const handleDownloadSingle = (location: Location) => {
@@ -171,7 +171,7 @@ export const QRCodeGenerator = ({ locations, onClose }: QRCodeGeneratorProps) =>
                       </p>
                     )}
                     <div className="text-sm text-gray-600 mt-1 space-y-0.5">
-                      {location.building && <p>🏢 {location.building}</p>}
+                      {(location as any).building && <p>🏢 {(location as any).building}</p>}
                       {location.floor && <p>📍 {location.floor}</p>}
                       {location.area && <p>📌 {location.area}</p>}
                     </div>
@@ -258,7 +258,7 @@ export const QRCodeGenerator = ({ locations, onClose }: QRCodeGeneratorProps) =>
                       )}
 
                       <div style={{ fontSize: '18px', color: '#6b7280', marginTop: '8mm' }}>
-                        {location.building && <p style={{ marginBottom: '6px' }}>🏢 {location.building}</p>}
+                        {(location as any).building && <p style={{ marginBottom: '6px' }}>🏢 {(location as any).building}</p>}
                         {location.floor && <p style={{ marginBottom: '6px' }}>📍 {location.floor}</p>}
                         {location.area && <p>📌 {location.area}</p>}
                       </div>
@@ -345,7 +345,7 @@ export const QRCodeGenerator = ({ locations, onClose }: QRCodeGeneratorProps) =>
                               )}
 
                               <div style={{ fontSize: '10px', color: '#6b7280' }}>
-                                {location.building && <div>{location.building}</div>}
+                                {(location as any).building && <div>{(location as any).building}</div>}
                                 {location.floor && <div>{location.floor}</div>}
                               </div>
                             </div>

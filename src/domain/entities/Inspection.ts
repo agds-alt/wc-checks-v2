@@ -26,6 +26,7 @@ export interface CreateInspectionInput {
   duration_minutes?: number | null;
   status?: string | null;
   notes?: string | null;
+  components?: any[]; // Optional inspection components
 }
 
 export interface UpdateInspectionInput {

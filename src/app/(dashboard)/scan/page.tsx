@@ -21,7 +21,7 @@ import { toast } from 'react-hot-toast';
 
 export default function ScanPage() {
   const router = useRouter();
-  const { user, authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [showScanner, setShowScanner] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -49,7 +49,7 @@ export default function ScanPage() {
             code
           )
         `)
-        .eq('user_id', user.id)
+        .filter('user_id', 'eq', user.id)
         .order('inspection_date', { ascending: false })
         .order('inspection_time', { ascending: false })
         .limit(5);
@@ -70,13 +70,13 @@ export default function ScanPage() {
       const { data, error } = await supabase
         .from('inspection_records')
         .select('id, overall_status, inspection_date')
-        .eq('user_id', user.id);
+        .filter('user_id', 'eq', user.id);
 
       if (error) throw error;
 
       const total = data.length;
-      const completed = data.filter(r => r.overall_status === 'completed').length;
-      const today = data.filter(r => {
+      const completed = (data as any).filter((r: any) => r.overall_status === 'completed').length;
+      const today = (data as any).filter((r: any) => {
         const recordDate = new Date(r.inspection_date || '');
         const now = new Date();
         return recordDate.toDateString() === now.toDateString();
@@ -103,8 +103,8 @@ export default function ScanPage() {
       // Query location directly by ID (primary key - very fast!)
       const { data: location, error } = await supabase
         .from('locations')
-        .select('id, name, is_active, building, floor')
-        .eq('id', locationId)
+        .select('*')
+        .filter('id', 'eq', locationId)
         .single();
 
       if (error || !location) {
@@ -113,16 +113,16 @@ export default function ScanPage() {
         return;
       }
 
-      if (!location.is_active) {
+      if (!(location as any).is_active) {
         toast.error('This location is currently inactive');
         return;
       }
 
       console.log('✅ Location found:', location);
-      toast.success(`Opening ${location.name}...`);
+      toast.success(`Opening ${(location as any).name}...`);
 
       setShowScanner(false);
-      router.push(`/inspect/${location.id}`);
+      router.push(`/inspect/${(location as any).id}`);
 
     } catch (error) {
       console.error('Scan error:', error);

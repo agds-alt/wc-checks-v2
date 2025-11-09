@@ -78,7 +78,7 @@ export default function AddLocationPage() {
         const { data, error } = await supabase
           .from('organizations')
           .select('*')
-          .eq('is_active', true)
+          .filter('is_active', 'eq', true)
           .order('name');
 
         if (error) throw error;
@@ -109,13 +109,13 @@ export default function AddLocationPage() {
         const { data, error } = await supabase
           .from('buildings')
           .select('*')
-          .eq('organization_id', formData.organization_id)
-          .eq('is_active', true)
+          .filter('organization_id', 'eq', formData.organization_id)
+          .filter('is_active', 'eq', true)
           .order('name');
 
         if (error) throw error;
 
-        setBuildings(data || []);
+        setBuildings((data || []) as any);
       } catch (error: any) {
         console.error('Error fetching buildings:', error);
         toast.error('Gagal memuat daftar gedung: ' + (error.message || 'Unknown error'));
@@ -142,8 +142,8 @@ export default function AddLocationPage() {
       // Fetch building to generate QR code
       const { data: building, error: buildingError } = await supabase
         .from('buildings')
-        .select('short_code, organizations(short_code)')
-        .eq('id', data.building_id)
+        .select('*, organizations(*)')
+        .filter('id', 'eq', data.building_id)
         .single();
 
       if (buildingError || !building) {
@@ -155,7 +155,7 @@ export default function AddLocationPage() {
 
       // Generate QR code
       const orgCode = (building.organizations as any).short_code;
-      const buildingCode = building.short_code;
+      const buildingCode = (building as any).short_code || (building as any).code;
       const locationCode = data.code || 'LOC';
       const uniqueId = Date.now().toString(36).slice(-4);
 

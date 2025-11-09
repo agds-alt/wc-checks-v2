@@ -69,7 +69,7 @@ export default function LocationsListPage() {
             name
           )
         `)
-        .eq('is_active', true)
+        .filter('is_active', 'eq', true)
         .order('name', { ascending: true });
 
       console.log('🔵 Database query result', {

@@ -23,7 +23,7 @@ const organizationSchema = z.object({
   name: z.string()
     .min(2, 'Organization name must be at least 2 characters')
     .max(255, 'Organization name is too long'),
-  short_code: z.string()
+  code: z.string()
     .min(1, 'Short code is required')
     .max(10, 'Short code must be 10 characters or less')
     .regex(/^[A-Z0-9\-_]+$/, 'Short code must contain only uppercase letters, numbers, hyphens, and underscores')
@@ -57,10 +57,10 @@ export default function OrganizationsManager() {
   // Form state
   const [formData, setFormData] = useState<Partial<OrganizationInsert>>({
     name: '',
-    short_code: '',
+    code: '',
     address: '',
-    email: '',
-    phone: '',
+    contact_email: '',
+    contact_phone: '',
     is_active: true,
   });
 
@@ -70,8 +70,8 @@ export default function OrganizationsManager() {
   // Filter organizations
   const filteredOrgs = organizations?.filter(org =>
     org.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    org.short_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    org.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    (org as any).code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (org as any).contact_email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Backend API hooks for CRUD
@@ -82,10 +82,10 @@ export default function OrganizationsManager() {
   const resetForm = () => {
     setFormData({
       name: '',
-      short_code: '',
+      code: '',
       address: '',
-      email: '',
-      phone: '',
+      contact_email: '',
+      contact_phone: '',
       is_active: true,
     });
     setSelectedOrg(null);
@@ -95,10 +95,10 @@ export default function OrganizationsManager() {
     setSelectedOrg(org);
     setFormData({
       name: org.name,
-      short_code: org.short_code,
+      code: org.code,
       address: org.address || '',
-      email: org.email || '',
-      phone: org.phone || '',
+      contact_email: org.contact_email || '',
+      contact_phone: org.contact_phone || '',
       is_active: org.is_active,
     });
     setIsFormOpen(true);
@@ -278,15 +278,15 @@ export default function OrganizationsManager() {
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-gray-900 truncate">{org.name}</h3>
                       <span className="inline-block mt-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">
-                        {org.short_code}
+                        {(org as any).code}
                       </span>
                     </div>
                   </div>
 
                   {/* Details */}
                   <div className="text-sm text-gray-600 space-y-1 mb-2">
-                    {org.email && <p className="truncate">📧 {org.email}</p>}
-                    {org.phone && <p>📱 {org.phone}</p>}
+                    {(org as any).contact_email && <p className="truncate">📧 {(org as any).contact_email}</p>}
+                    {(org as any).contact_phone && <p>📱 {(org as any).contact_phone}</p>}
                     {org.address && <p className="truncate">📍 {org.address}</p>}
                   </div>
 
@@ -322,7 +322,7 @@ export default function OrganizationsManager() {
                       />
                       <div className="absolute right-0 top-12 z-20 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 min-w-[160px]">
                         <button
-                          onClick={() => handleEdit(org)}
+                          onClick={() => handleEdit(org as any)}
                           className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2 text-gray-700"
                         >
                           <Edit2 className="w-4 h-4" />
@@ -373,8 +373,8 @@ export default function OrganizationsManager() {
                 </label>
                 <input
                   type="text"
-                  value={formData.short_code}
-                  onChange={(e) => setFormData({ ...formData, short_code: e.target.value.toUpperCase() })}
+                  value={formData.code}
+                  onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   placeholder="e.g., ORG01"
                   required
@@ -387,8 +387,8 @@ export default function OrganizationsManager() {
                 </label>
                 <input
                   type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  value={formData.contact_email}
+                  onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -399,8 +399,8 @@ export default function OrganizationsManager() {
                 </label>
                 <input
                   type="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  value={formData.contact_phone}
+                  onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
               </div>
