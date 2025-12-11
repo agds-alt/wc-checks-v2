@@ -49,7 +49,7 @@ export default function OccupationManagerPage() {
         .order('display_name');
 
       if (error) throw error;
-      return data as Occupation[];
+      return (data || []) as unknown as Occupation[];
     }
   });
 
@@ -61,7 +61,7 @@ export default function OccupationManagerPage() {
         .insert({
           ...data,
           is_active: true
-        });
+        } as any);
 
       if (error) throw error;
     },
@@ -80,7 +80,7 @@ export default function OccupationManagerPage() {
     mutationFn: async ({ id, data }: { id: string; data: OccupationForm }) => {
       const { error } = await supabase
         .from('user_occupations')
-        .update(data)
+        .update(data as any)
         .filter('id', 'eq', id);
 
       if (error) throw error;
@@ -101,7 +101,7 @@ export default function OccupationManagerPage() {
       // Soft delete - set is_active to false
       const { error } = await supabase
         .from('user_occupations')
-        .update({ is_active: false })
+        .update({ is_active: false } as any)
         .filter('id', 'eq', id);
 
       if (error) throw error;

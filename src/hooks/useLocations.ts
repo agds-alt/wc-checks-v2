@@ -1,6 +1,6 @@
 // src/hooks/useLocations.ts - Locations CRUD via backend API
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
+import { getAuthToken } from '../lib/auth';
 import { toast } from 'react-hot-toast';
 import type { Tables } from '../types/database.types';
 
@@ -36,10 +36,7 @@ export function useLocations({
   return useQuery({
     queryKey: ['locations', buildingId, organizationId, includeInactive],
     queryFn: async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         throw new Error('No authentication token');
@@ -87,10 +84,7 @@ export function useLocation(locationId?: string) {
     queryFn: async () => {
       if (!locationId) return null;
 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         throw new Error('No authentication token');
@@ -135,10 +129,7 @@ export function useLocationByCode(
     queryFn: async () => {
       if (!shortCode) return null;
 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         throw new Error('No authentication token');
@@ -189,10 +180,7 @@ export function useCreateLocation() {
       code?: string | null;
       type?: string | null;
     }) => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         throw new Error('No authentication token');
@@ -252,10 +240,7 @@ export function useUpdateLocation() {
       locationId: string;
       updates: Partial<Location>;
     }) => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         throw new Error('No authentication token');
@@ -302,10 +287,7 @@ export function useDeleteLocation() {
 
   return useMutation({
     mutationFn: async (locationId: string) => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         throw new Error('No authentication token');

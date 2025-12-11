@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
 import type { Tables } from '../types/database.types';
+import { parseErrorResponse } from '../lib/utils/apiHelpers';
 
 type InspectionRecord = Tables<'inspection_records'>;
 
@@ -30,8 +31,8 @@ export function useInspections() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to fetch inspections');
+        const errorMessage = await parseErrorResponse(response, 'Failed to fetch inspections');
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
@@ -45,7 +46,7 @@ export function useInspections() {
  * Fetch all inspections via ADMIN API
  * Only admins can access this endpoint - returns all users' inspections
  */
-export function useAdminInspections(limit: number = 100) {
+export function useAdminInspections(limit: number = 1000) {
   return useQuery({
     queryKey: ['admin-inspections', limit],
     queryFn: async () => {
@@ -65,8 +66,8 @@ export function useAdminInspections(limit: number = 100) {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to fetch admin inspections');
+        const errorMessage = await parseErrorResponse(response, 'Failed to fetch admin inspections');
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
@@ -102,8 +103,8 @@ export function useInspection(inspectionId?: string) {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to fetch inspection');
+        const errorMessage = await parseErrorResponse(response, 'Failed to fetch inspection');
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
@@ -157,8 +158,15 @@ export function useCreateInspection() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to create inspection');
+        let errorMessage = 'Failed to create inspection';
+        try {
+          const error = await response.json();
+          errorMessage = error.error || errorMessage;
+        } catch {
+          // Server returned non-JSON response (likely HTML error page)
+          errorMessage = `Server error (${response.status})`;
+        }
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
@@ -210,8 +218,15 @@ export function useUpdateInspection() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to update inspection');
+        let errorMessage = 'Failed to update inspection';
+        try {
+          const error = await response.json();
+          errorMessage = error.error || errorMessage;
+        } catch {
+          // Server returned non-JSON response (likely HTML error page)
+          errorMessage = `Server error (${response.status})`;
+        }
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
@@ -258,8 +273,15 @@ export function useDeleteInspection() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to delete inspection');
+        let errorMessage = 'Failed to delete inspection';
+        try {
+          const error = await response.json();
+          errorMessage = error.error || errorMessage;
+        } catch {
+          // Server returned non-JSON response (likely HTML error page)
+          errorMessage = `Server error (${response.status})`;
+        }
+        throw new Error(errorMessage);
       }
 
       return response.json();

@@ -1,6 +1,6 @@
 // src/hooks/useUserRoles.ts - Manage users and their roles (SUPERADMIN ONLY)
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
+import { getAuthToken } from '../lib/auth';
 import toast from 'react-hot-toast';
 
 // Helper function to safely parse JSON responses
@@ -37,8 +37,7 @@ export function useUsers() {
       console.log('[useUsers] Fetching users from backend API...');
 
       // Get current session token
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         throw new Error('No authentication token available');
@@ -76,8 +75,7 @@ export function useRoles() {
       console.log('[useRoles] Fetching roles from backend API...');
 
       // Get current session token
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         throw new Error('No authentication token available');
@@ -121,8 +119,7 @@ export function useAssignRole() {
       assignedBy?: string; // Not needed anymore - backend handles it
     }) => {
       // Get current session token
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         throw new Error('No authentication token available');
@@ -163,8 +160,7 @@ export function useToggleUserStatus() {
   return useMutation({
     mutationFn: async ({ userId, isActive }: { userId: string; isActive: boolean }) => {
       // Get current session token
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         throw new Error('No authentication token available');

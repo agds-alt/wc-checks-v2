@@ -6,7 +6,9 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { getAuthToken } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
+import { parseErrorResponse } from '@/lib/utils/apiHelpers';
 import toast from 'react-hot-toast';
 import {
   LogOut,
@@ -128,8 +130,8 @@ export default function ProfilePage() {
 
     try {
       // Get auth token
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
+      const token = getAuthToken();
+      if (!token) {
         throw new Error('No auth token available');
       }
 
@@ -137,7 +139,7 @@ export default function ProfilePage() {
       const response = await fetch('/api/profile', {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${session.access_token}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -148,8 +150,8 @@ export default function ProfilePage() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to update profile');
+        const errorMessage = await parseErrorResponse(response, 'Failed to update profile');
+        throw new Error(errorMessage);
       }
 
       // Invalidate queries to refetch fresh data
@@ -324,16 +326,16 @@ export default function ProfilePage() {
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
                   <Briefcase
                     className="w-5 h-5"
-                    style={{ color: occupation?.color || '#6b7280' }}
+                    style={{ color: (occupation as any)?.color || '#6b7280' }}
                   />
                   <div className="flex-1">
                     <div className="text-xs text-gray-500">Jabatan</div>
                     <div className="font-medium text-gray-900">
-                      {occupation?.display_name || 'Belum diisi'}
+                      {(occupation as any)?.display_name || 'Belum diisi'}
                     </div>
-                    {occupation?.description && (
+                    {(occupation as any)?.description && (
                       <div className="text-xs text-gray-500 mt-0.5">
-                        {occupation.description}
+                        {(occupation as any).description}
                       </div>
                     )}
                   </div>
@@ -345,10 +347,10 @@ export default function ProfilePage() {
                   <div className="flex-1">
                     <div className="text-xs text-gray-500">Bergabung Sejak</div>
                     <div className="font-medium text-gray-900">
-                      {formatDate(profile.created_at) !== 'N/A'
-                        ? formatDate(profile.created_at)
-                        : formatDate(user.created_at) !== 'N/A'
-                        ? formatDate(user.created_at)
+                      {formatDate(profile.created_at instanceof Date ? profile.created_at.toISOString() : profile.created_at) !== 'N/A'
+                        ? formatDate(profile.created_at instanceof Date ? profile.created_at.toISOString() : profile.created_at)
+                        : formatDate(user.created_at instanceof Date ? user.created_at.toISOString() : user.created_at) !== 'N/A'
+                        ? formatDate(user.created_at instanceof Date ? user.created_at.toISOString() : user.created_at)
                         : 'Baru bergabung'}
                     </div>
                   </div>
@@ -361,7 +363,7 @@ export default function ProfilePage() {
                     <div className="flex-1">
                       <div className="text-xs text-gray-500">Login Terakhir</div>
                       <div className="font-medium text-gray-900">
-                        {formatDateTime(profile.last_login_at)}
+                        {formatDateTime(profile.last_login_at instanceof Date ? profile.last_login_at.toISOString() : profile.last_login_at)}
                       </div>
                     </div>
                   </div>
@@ -424,7 +426,7 @@ export default function ProfilePage() {
                     disabled={isSaving}
                   >
                     <option value="">Pilih Jabatan</option>
-                    {allOccupations?.map((occ) => (
+                    {allOccupations?.map((occ: any) => (
                       <option key={occ.id} value={occ.id}>
                         {occ.display_name}
                       </option>

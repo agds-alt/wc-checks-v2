@@ -1,6 +1,6 @@
 // PDF Report Generator for WC Check Monthly Reports
 import jsPDF from 'jspdf';
-import autoTable, { type UserOptions } from 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { format, getDaysInMonth } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
 import type {
@@ -94,7 +94,7 @@ async function addCoverPage(
   data: PDFReportData,
   config: PDFConfig
 ): Promise<void> {
-  const { marginLeft, contentWidth } = config;
+  const { marginLeft } = config;
   let yPos = 40;
 
   // Try to load logo
@@ -228,7 +228,7 @@ async function addScoreTablePage(
         if (cellValue && cellValue !== '-') {
           const score = parseInt(cellValue as string, 10);
           const color = getScoreColorString(score);
-          data.cell.styles.fillColor = hexToRgb(color);
+          data.cell.styles.fillColor = hexToRgb(color) as any;
 
           // Set text color based on background
           if (score >= 90) {
@@ -292,7 +292,7 @@ async function addScoreTablePage(
           if (cellValue && cellValue !== '-') {
             const score = parseInt(cellValue as string, 10);
             const color = getScoreColorString(score);
-            data.cell.styles.fillColor = hexToRgb(color);
+            data.cell.styles.fillColor = hexToRgb(color) as any;
 
             // Set text color based on background
             if (score >= 90) {
@@ -500,7 +500,7 @@ async function addCleanerStatsPage(
  */
 function addSignaturePage(
   pdf: jsPDF,
-  data: PDFReportData,
+  _data: PDFReportData,
   config: PDFConfig
 ): void {
   const { marginLeft, marginTop, contentWidth } = config;

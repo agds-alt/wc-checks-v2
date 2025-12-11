@@ -200,7 +200,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
                 {profile?.profile_photo_url ? (
                   <img
                     src={profile.profile_photo_url}
-                    alt={profile.full_name}
+                    alt={profile.full_name || 'User'}
                     className="w-full h-full rounded-full object-cover"
                   />
                 ) : (

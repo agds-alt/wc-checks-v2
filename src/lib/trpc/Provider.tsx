@@ -22,10 +22,10 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
 
   const [trpcClient] = useState(() =>
     trpc.createClient({
+      transformer: superjson,
       links: [
         httpLink({
           url: `${getBaseUrl()}/api/trpc`,
-          transformer: superjson,
           fetch(url, options) {
             return fetch(url, {
               ...options,
@@ -33,9 +33,9 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
             });
           },
           headers() {
-            // Get token from localStorage
+            // Get token from localStorage (stored by authStorage.ts)
             const token = typeof window !== 'undefined'
-              ? localStorage.getItem('auth_token')
+              ? localStorage.getItem('sb-auth-token')
               : null;
 
             return {
@@ -45,7 +45,7 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
           },
         }),
       ],
-    })
+    } as any)
   );
 
   return (

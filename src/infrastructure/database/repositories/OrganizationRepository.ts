@@ -80,7 +80,14 @@ export class OrganizationRepository implements IOrganizationRepository {
   private mapToEntity(data: any): Organization {
     return {
       id: data.id,
+      code: data.code,
       name: data.name,
+      description: data.description,
+      address: data.address,
+      contact_phone: data.contact_phone,
+      contact_email: data.contact_email,
+      logo_url: data.logo_url,
+      is_active: data.is_active,
       created_by: data.created_by,
       created_at: new Date(data.created_at),
       updated_at: new Date(data.updated_at),

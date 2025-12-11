@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../hooks/useAuth';
 import { useIsAdmin } from '../../../hooks/useIsAdmin';
-import { useInspections, useAdminInspections } from '../../../hooks/useInspections';
+import { useInspections, useAdminInspections } from '../../../hooks/useInspectionsTRPC';
 import {
   QrCode,
   MapPin,
@@ -70,7 +70,7 @@ export default function DashboardPage() {
 
   // Fetch inspections via API - admin or user endpoint
   const { data: userInspections, isLoading: userInspectionsLoading } = useInspections();
-  const { data: adminInspections, isLoading: adminInspectionsLoading } = useAdminInspections(100);
+  const { data: adminInspections, isLoading: adminInspectionsLoading } = useAdminInspections(1000);
 
   // Use admin data if admin, otherwise use user data
   const inspections = isAdmin ? adminInspections : userInspections;

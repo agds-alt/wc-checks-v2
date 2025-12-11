@@ -74,6 +74,7 @@ export const buildingRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       const building = await buildingRepo.create({
+        code: `BLD-${Date.now()}`, // Auto-generate code
         name: input.name,
         address: input.address,
         organization_id: input.organizationId || ctx.user.organizationId,

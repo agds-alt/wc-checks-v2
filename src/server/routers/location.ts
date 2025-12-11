@@ -101,10 +101,12 @@ export const locationRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       const location = await locationRepo.create({
+        code: `LOC-${Date.now()}`, // Auto-generate code
         qr_code: input.qrCode,
         name: input.name,
         floor: input.floor,
         building_id: input.buildingId,
+        organization_id: ctx.user.organizationId,
         created_by: ctx.user.userId,
       });
 

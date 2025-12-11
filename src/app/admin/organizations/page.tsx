@@ -8,7 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { useOrganizations, useCreateOrganization, useUpdateOrganization, useDeleteOrganization } from '@/hooks/useOrganizations';
 import { Tables, TablesInsert } from '@/types/database.types';
-import { Plus, Edit2, Trash2, Search, MoreVertical, Building2, QrCode, Menu, ShieldAlert, User } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, MoreVertical, Building2, Menu, ShieldAlert, User } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Sidebar } from '@/components/mobile/Sidebar';
@@ -387,7 +387,7 @@ export default function OrganizationsManager() {
                 </label>
                 <input
                   type="email"
-                  value={formData.contact_email}
+                  value={formData.contact_email ?? ''}
                   onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
@@ -399,7 +399,7 @@ export default function OrganizationsManager() {
                 </label>
                 <input
                   type="tel"
-                  value={formData.contact_phone}
+                  value={formData.contact_phone ?? ''}
                   onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
@@ -410,7 +410,7 @@ export default function OrganizationsManager() {
                   Address
                 </label>
                 <textarea
-                  value={formData.address}
+                  value={formData.address ?? ''}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   rows={3}
@@ -421,7 +421,7 @@ export default function OrganizationsManager() {
                 <input
                   type="checkbox"
                   id="is_active"
-                  checked={formData.is_active}
+                  checked={formData.is_active ?? true}
                   onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
                   className="w-4 h-4"
                 />

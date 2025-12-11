@@ -12,11 +12,7 @@ export const queryClient = new QueryClient({
       refetchOnReconnect: true,
       retry: false, // Fail fast
       staleTime: 0, // NO cache
-      gcTime: 0, // NO memory
-      onError: (error: any) => {
-        logger.error('React Query error', error);
-      },
-    },
+    } as any,
     mutations: {
       retry: 0,
       onError: (error: any) => {

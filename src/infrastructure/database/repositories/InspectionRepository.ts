@@ -1,7 +1,6 @@
 // Inspection Repository Implementation
-import { IInspectionRepository } from '@/domain/repositories/IInspectionRepository';
+import { IInspectionRepository, InspectionComponentRecord } from '@/domain/repositories/IInspectionRepository';
 import { Inspection, CreateInspectionInput, UpdateInspectionInput } from '@/domain/entities/Inspection';
-import { InspectionComponent } from '@/types/inspection.types';
 import { getSupabaseServerClient } from '../supabase/client';
 
 export class InspectionRepository implements IInspectionRepository {
@@ -124,7 +123,7 @@ export class InspectionRepository implements IInspectionRepository {
     }
   }
 
-  async getComponents(inspectionId: string): Promise<InspectionComponent[]> {
+  async getComponents(inspectionId: string): Promise<InspectionComponentRecord[]> {
     const { data, error } = await this.supabase
       .from('inspection_components')
       .select('*')
@@ -134,7 +133,7 @@ export class InspectionRepository implements IInspectionRepository {
     return data.map(this.mapComponentToEntity);
   }
 
-  async list(limit: number = 100, offset: number = 0): Promise<Inspection[]> {
+  async list(limit: number = 1000, offset: number = 0): Promise<Inspection[]> {
     const { data, error } = await this.supabase
       .from('inspections')
       .select('*')
@@ -163,14 +162,14 @@ export class InspectionRepository implements IInspectionRepository {
     };
   }
 
-  private mapComponentToEntity(data: any): InspectionComponent {
+  private mapComponentToEntity(data: any): InspectionComponentRecord {
     return {
       id: data.id,
       inspection_id: data.inspection_id,
       component_name: data.component_name,
       rating: data.rating,
       notes: data.notes,
-      created_at: new Date(data.created_at),
+      created_at: data.created_at,
     };
   }
 }

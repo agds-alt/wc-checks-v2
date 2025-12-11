@@ -18,7 +18,6 @@ import { z } from 'zod';
 
 type Building = Tables<'buildings'>;
 type BuildingInsert = TablesInsert<'buildings'>;
-type Organization = Tables<'organizations'>;
 
 // Zod validation schema for building
 // ⚠️ IMPORTANT: DB expects NULL for optional fields, not undefined!
@@ -511,7 +510,7 @@ export default function BuildingsManager() {
                 <input
                   type="checkbox"
                   id="is_active"
-                  checked={formData.is_active}
+                  checked={formData.is_active ?? true}
                   onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
                   className="w-4 h-4"
                 />

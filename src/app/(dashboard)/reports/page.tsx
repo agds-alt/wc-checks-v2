@@ -10,10 +10,11 @@ import { InspectionDrawer } from '@/components/reports/InspectionDrawer';
 import { InspectionDetailModal } from '@/components/reports/InspectionDetailModal';
 import { Sidebar } from '@/components/mobile/Sidebar';
 import { BottomNav } from '@/components/mobile/BottomNav';
-import { Calendar, TrendingUp, FileText, Menu, Download, Users, FileDown } from 'lucide-react';
+import { TrendingUp, FileText, Menu, Download, Users, FileDown } from 'lucide-react';
 import { exportToCSV, type ExportInspectionData } from '@/lib/exportUtils';
 import { generateMonthlyReport } from '@/lib/pdfGenerator';
-import { supabase } from '@/lib/supabase';
+import { getAuthToken } from '@/lib/auth';
+import { parseErrorResponse } from '@/lib/utils/apiHelpers';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 
@@ -103,8 +104,7 @@ export default function ReportsPage() {
       const month = format(currentDate, 'yyyy-MM');
 
       // ✅ Use backend API instead of direct query
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         throw new Error('No authentication token');
@@ -118,8 +118,8 @@ export default function ReportsPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to fetch' }));
-        throw new Error(errorData.error || 'Failed to fetch inspections');
+        const errorMessage = await parseErrorResponse(response, 'Failed to fetch inspections');
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
@@ -210,8 +210,7 @@ export default function ReportsPage() {
       const month = format(currentDate, 'yyyy-MM');
 
       // ✅ Use backend API - admin can fetch ALL users' data by not passing userId
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         throw new Error('No authentication token');
@@ -225,8 +224,8 @@ export default function ReportsPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to fetch' }));
-        throw new Error(errorData.error || 'Failed to fetch inspections');
+        const errorMessage = await parseErrorResponse(response, 'Failed to fetch all users inspections');
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();

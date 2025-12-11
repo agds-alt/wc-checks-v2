@@ -1,6 +1,7 @@
 // src/hooks/useAuditLogs.ts - View audit logs (Admin only)
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
+import { getAuthToken } from '../lib/auth';
+import { parseErrorResponse } from '../lib/utils/apiHelpers';
 
 export interface AuditLog {
   id: string;
@@ -35,8 +36,7 @@ export function useAuditLogs(
       console.log('[useAuditLogs] Fetching audit logs from backend API...');
 
       // Get current session token
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         throw new Error('No authentication token available');
@@ -60,9 +60,9 @@ export function useAuditLogs(
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        console.error('[useAuditLogs] Backend API error:', error);
-        throw new Error(error.error || 'Failed to fetch audit logs');
+        const errorMessage = await parseErrorResponse(response, 'Failed to fetch audit logs');
+        console.error('[useAuditLogs] Backend API error:', errorMessage);
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
@@ -88,8 +88,7 @@ export function useRecentAdminActions() {
       yesterday.setDate(yesterday.getDate() - 1);
 
       // Get current session token
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         throw new Error('No authentication token available');
@@ -110,8 +109,8 @@ export function useRecentAdminActions() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to fetch recent admin actions');
+        const errorMessage = await parseErrorResponse(response, 'Failed to fetch recent admin actions');
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
@@ -131,8 +130,7 @@ export function useFailedActions(limit: number = 50) {
       console.log('[useFailedActions] Fetching failed actions from backend API...');
 
       // Get current session token
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         throw new Error('No authentication token available');
@@ -153,8 +151,8 @@ export function useFailedActions(limit: number = 50) {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to fetch failed actions');
+        const errorMessage = await parseErrorResponse(response, 'Failed to fetch failed actions');
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();

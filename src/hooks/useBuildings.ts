@@ -1,5 +1,6 @@
 // src/hooks/useBuildings.ts - Buildings CRUD via backend API
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getAuthToken } from '../lib/auth';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
 import type { Tables } from '../types/database.types';
@@ -34,10 +35,7 @@ export function useBuildings({
   return useQuery({
     queryKey: ['buildings', organizationId, includeInactive],
     queryFn: async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         throw new Error('No authentication token');
@@ -82,10 +80,7 @@ export function useBuilding(buildingId?: string) {
     queryFn: async () => {
       if (!buildingId) return null;
 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         throw new Error('No authentication token');
@@ -125,10 +120,7 @@ export function useBuildingByCode(shortCode?: string, organizationId?: string) {
     queryFn: async () => {
       if (!shortCode) return null;
 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         throw new Error('No authentication token');
@@ -175,10 +167,7 @@ export function useCreateBuilding() {
       address?: string;
       total_floors?: number;
     }) => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         throw new Error('No authentication token');
@@ -231,10 +220,7 @@ export function useUpdateBuilding() {
       buildingId: string;
       updates: Partial<Building>;
     }) => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         throw new Error('No authentication token');
@@ -286,10 +272,7 @@ export function useDeleteBuilding() {
     mutationFn: async (buildingId: string) => {
       console.log('🗑️ [useDeleteBuilding] Starting delete for building:', buildingId);
 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         console.error('❌ [useDeleteBuilding] No authentication token');

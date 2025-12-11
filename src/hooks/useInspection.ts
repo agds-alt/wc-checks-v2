@@ -1,5 +1,6 @@
 // src/hooks/useInspection.ts - OPTIMIZED: No double upload
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { getAuthToken } from '../lib/auth';
 import { supabase } from '../lib/supabase';
 import { logger } from '../lib/logger';
 import { TablesInsert } from '../../src/types/database.types';
@@ -35,8 +36,7 @@ export const useInspection = (inspectionId?: string) => {
     queryFn: async () => {
       if (!inspectionId) return null;
 
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         throw new Error('No authentication token');
@@ -63,8 +63,7 @@ export const useInspection = (inspectionId?: string) => {
   const getDefaultTemplate = useQuery({
     queryKey: ['default-template'],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         logger.warn('No auth token for template fetch, using fallback');
@@ -127,8 +126,7 @@ export const useInspection = (inspectionId?: string) => {
     queryFn: async () => {
       if (!locationId) throw new Error('Location ID is required');
 
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         throw new Error('No authentication token');

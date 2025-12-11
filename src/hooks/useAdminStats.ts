@@ -1,6 +1,7 @@
 // src/hooks/useAdminStats.ts - Admin Dashboard Statistics via Backend API
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
+import { getAuthToken } from '../lib/auth';
+import { parseErrorResponse } from '../lib/utils/apiHelpers';
 
 export interface AdminStats {
   totalUsers: number;
@@ -20,8 +21,7 @@ export function useAdminStats() {
     queryFn: async () => {
       console.log('[useAdminStats] Fetching from backend API...');
 
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) throw new Error('No authentication token');
 
@@ -30,8 +30,8 @@ export function useAdminStats() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to fetch statistics');
+        const errorMessage = await parseErrorResponse(response, 'Failed to fetch statistics');
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();

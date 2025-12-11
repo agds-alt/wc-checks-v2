@@ -218,7 +218,7 @@ export default function UserManagement() {
         >
           <option value="all">All Roles</option>
           <option value="none">No Role Assigned</option>
-          {roles?.map((role) => (
+          {roles?.map((role: { id: string; name: string; level: number }) => (
             <option key={role.id} value={role.id}>
               {role.name} (Level {role.level})
             </option>
@@ -285,7 +285,7 @@ export default function UserManagement() {
                   disabled={assignRoleMutation.isPending}
                 >
                   <option value="">No Role</option>
-                  {roles?.map((role) => (
+                  {roles?.map((role: { id: string; name: string; level: number }) => (
                     <option key={role.id} value={role.id}>
                       {role.name} (Level {role.level})
                     </option>

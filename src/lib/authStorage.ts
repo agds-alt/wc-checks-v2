@@ -3,15 +3,18 @@ import type { Session } from '@supabase/supabase-js';
 
 /**
  * Auth Storage Utility
- * 
+ *
  * Safely manage authentication storage to prevent corrupt data
  * from breaking the app and causing infinite loading loops.
- * 
+ *
  * Usage:
  * - Call authStorage.validateOnStartup() in main.tsx
  * - Call authStorage.clear() on logout
  * - Use authStorage.isValid() to check before auth operations
  */
+
+// Check if running in browser
+const isBrowser = typeof window !== 'undefined';
 
 export const authStorage = {
   /**
@@ -19,6 +22,8 @@ export const authStorage = {
    * This stores the session in the format Supabase expects
    */
   save(session: Session | null): void {
+    if (!isBrowser) return;
+
     try {
       if (!session) {
         console.warn('⚠️ Attempted to save null session');
@@ -36,7 +41,7 @@ export const authStorage = {
       };
 
       localStorage.setItem('supabase.auth.token', JSON.stringify(tokenData));
-      
+
       // Also save to custom keys for easier access
       localStorage.setItem('sb-auth-token', session.access_token);
       localStorage.setItem('sb-refresh-token', session.refresh_token);
@@ -54,6 +59,8 @@ export const authStorage = {
    * Returns false if storage is corrupt or missing required fields
    */
   isValid(): boolean {
+    if (!isBrowser) return false;
+
     try {
       const token = localStorage.getItem('supabase.auth.token');
       
@@ -87,6 +94,8 @@ export const authStorage = {
    * Call this on logout or when corrupt storage is detected
    */
   clear(): void {
+    if (!isBrowser) return;
+
     try {
       console.log('ðŸ§¹ Clearing auth storage...');
       
@@ -127,6 +136,8 @@ export const authStorage = {
    * Call this in main.tsx before rendering app
    */
   validateOnStartup(): void {
+    if (!isBrowser) return;
+
     console.log('ðŸ” Validating auth storage on startup...');
     
     if (!this.isValid() && this.hasStoredToken()) {
@@ -150,6 +161,8 @@ export const authStorage = {
    * Check if there's any stored token (even if invalid)
    */
   hasStoredToken(): boolean {
+    if (!isBrowser) return false;
+
     try {
       const token = localStorage.getItem('supabase.auth.token');
       return token !== null && token !== 'undefined' && token !== '';
@@ -162,13 +175,15 @@ export const authStorage = {
    * Get token expiry time
    */
   getTokenExpiry(): Date | null {
+    if (!isBrowser) return null;
+
     try {
       const token = localStorage.getItem('supabase.auth.token');
       if (!token) return null;
-      
+
       const parsed = JSON.parse(token);
       if (!parsed.expires_at) return null;
-      
+
       // Supabase stores unix timestamp in seconds
       return new Date(parsed.expires_at * 1000);
     } catch (error) {
@@ -215,10 +230,12 @@ export const authStorage = {
    * Get stored user ID (if available)
    */
   getUserId(): string | null {
+    if (!isBrowser) return null;
+
     try {
       const token = localStorage.getItem('supabase.auth.token');
       if (!token) return null;
-      
+
       const parsed = JSON.parse(token);
       return parsed.user?.id || null;
     } catch {
@@ -231,6 +248,11 @@ export const authStorage = {
    * Use this for troubleshooting
    */
   debug(): void {
+    if (!isBrowser) {
+      console.warn('Debug only available in browser');
+      return;
+    }
+
     console.group('ðŸ” Auth Storage Debug Info');
     
     console.log('Valid:', this.isValid());
@@ -255,6 +277,8 @@ export const authStorage = {
    * Clears everything and reloads page
    */
   emergencyReset(): void {
+    if (!isBrowser) return;
+
     console.warn('ðŸš¨ Emergency reset triggered');
     this.clear();
     window.location.href = '/login';

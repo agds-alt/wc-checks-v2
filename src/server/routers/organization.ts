@@ -61,6 +61,7 @@ export const organizationRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       const org = await orgRepo.create({
+        code: `ORG-${Date.now()}`, // Auto-generate code
         name: input.name,
         created_by: ctx.user.userId,
       });

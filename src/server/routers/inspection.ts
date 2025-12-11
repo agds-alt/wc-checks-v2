@@ -127,10 +127,10 @@ export const inspectionRouter = router({
       const inspection = await inspectionRepo.create({
         location_id: input.locationId,
         inspector_id: ctx.user.userId,
-        inspection_date: input.inspectionDate,
+        inspection_date: input.inspectionDate.toISOString(),
+        inspection_data: {}, // Required field
         overall_rating: input.overallRating,
         notes: input.notes,
-        created_by: ctx.user.userId,
         components: input.components.map((c) => ({
           component_name: c.componentName,
           rating: c.rating,
@@ -189,7 +189,7 @@ export const inspectionRouter = router({
   list: protectedProcedure
     .input(
       z.object({
-        limit: z.number().default(100),
+        limit: z.number().default(1000),
         offset: z.number().default(0),
       })
     )

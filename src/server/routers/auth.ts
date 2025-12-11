@@ -4,28 +4,10 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { sessionService } from '@/infrastructure/auth/session';
 import { UserRepository } from '@/infrastructure/database/repositories/UserRepository';
+import * as bcrypt from 'bcrypt';
 
 const userRepo = new UserRepository();
-
-// Demo mode check (untuk testing tanpa Supabase)
-const DEMO_MODE = !process.env.SUPABASE_URL || process.env.SUPABASE_URL.includes('your-project-id');
-
-// Demo user untuk testing
-const DEMO_USER = {
-  id: 'demo-user-123',
-  email: 'demo@test.com',
-  full_name: 'Demo User',
-  phone: '+62812345678',
-  profile_photo_url: null,
-  is_active: true,
-  occupation_id: null,
-  password_hash: null,
-  last_login_at: new Date(),
-  created_at: new Date(),
-  updated_at: new Date(),
-};
-
-const DEMO_ROLE_LEVEL = 90; // Admin role level
+const SALT_ROUNDS = 10; // bcrypt salt rounds
 
 export const authRouter = router({
   /**
@@ -43,54 +25,33 @@ export const authRouter = router({
       console.log('🔍 Input received:', JSON.stringify(input, null, 2));
       console.log('🔍 Context:', JSON.stringify(ctx, null, 2));
 
-      // DEMO MODE: Return demo user untuk testing
-      if (DEMO_MODE) {
-        console.log('🎭 DEMO MODE: Using mock user (Supabase not configured)');
-
-        const token = await sessionService.createSession({
-          userId: DEMO_USER.id,
-          email: DEMO_USER.email,
-          role: DEMO_ROLE_LEVEL,
-          organizationId: 'demo-org-123', // Mock organization ID for demo
-        });
-
-        const response = {
-          token,
-          user: {
-            id: DEMO_USER.id,
-            email: DEMO_USER.email,
-            full_name: DEMO_USER.full_name,
-            phone: DEMO_USER.phone,
-            profile_photo_url: DEMO_USER.profile_photo_url,
-            is_active: DEMO_USER.is_active,
-            occupation_id: DEMO_USER.occupation_id,
-            role: DEMO_ROLE_LEVEL,
-            organizationId: 'demo-org-123',
-          },
-        };
-
-        console.log('✅ Login successful, returning:', JSON.stringify(response, null, 2));
-        return response;
-      }
-
-      // PRODUCTION MODE: Query database
+      // Query database for user
       const user = await userRepo.findByEmail(input.email);
 
-      if (!user) {
+      if (!user || !user.password_hash) {
         throw new TRPCError({
           code: 'UNAUTHORIZED',
           message: 'Invalid credentials',
         });
       }
 
-      // TODO: Verify password with bcrypt
-      // For now, we'll assume password is correct
-      // In production, you should use bcrypt.compare(input.password, user.password_hash)
+      // Verify password with bcrypt
+      const isPasswordValid = await bcrypt.compare(input.password, user.password_hash);
 
-      // TODO: Get user's role level from user_roles table
-      // For now, using default role level
-      const roleLevel = 0;
-      const organizationId = 'default-org'; // TODO: Get from user_roles or context
+      if (!isPasswordValid) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'Invalid credentials',
+        });
+      }
+
+      // Get user's role level from user_roles table
+      const userRoleData = await userRepo.getUserRoleLevel(user.id);
+      const roleLevel = userRoleData?.level || 0;
+
+      // Get default organization ID (or user's organization if implemented)
+      const defaultOrg = await userRepo.getDefaultOrganization();
+      const organizationId = defaultOrg?.id || 'unknown';
 
       // Create session
       const token = await sessionService.createSession({
@@ -120,15 +81,6 @@ export const authRouter = router({
    * Get current user
    */
   me: protectedProcedure.query(async ({ ctx }) => {
-    // DEMO MODE: Return demo user with role
-    if (DEMO_MODE) {
-      return {
-        ...DEMO_USER,
-        role: DEMO_ROLE_LEVEL,
-        organizationId: 'demo-org-123',
-      };
-    }
-
     const user = await userRepo.findById(ctx.user.userId);
 
     if (!user) {
@@ -199,8 +151,8 @@ export const authRouter = router({
         });
       }
 
-      // TODO: Hash password with bcrypt
-      // const hashedPassword = await bcrypt.hash(input.password, 10);
+      // Hash password with bcrypt
+      const hashedPassword = await bcrypt.hash(input.password, SALT_ROUNDS);
 
       // Generate user ID (Supabase uses UUID)
       const userId = crypto.randomUUID();
@@ -211,12 +163,15 @@ export const authRouter = router({
         email: input.email,
         full_name: input.full_name,
         phone: input.phone || null,
-        password_hash: input.password, // TODO: Hash this with bcrypt
+        password_hash: hashedPassword,
       });
 
-      // TODO: Create default user role in user_roles table
-      const roleLevel = 0; // Default role level
-      const organizationId = 'default-org'; // TODO: Assign organization
+      // Assign default viewer role (TODO: Make role selectable during registration)
+      const roleLevel = 10; // Viewer role level
+
+      // Get default organization
+      const defaultOrg = await userRepo.getDefaultOrganization();
+      const organizationId = defaultOrg?.id || 'unknown';
 
       // Create session
       const token = await sessionService.createSession({

@@ -4,8 +4,9 @@
 // src/lib/locationService.ts (FIXED VERSION)
 
 import { supabase } from './supabase';
-import { TablesInsert, Json } from '../types/database.types';
-import { LocationFormData, LocationCoordinates } from '../types/location.types';
+import { TablesInsert } from '../types/database.types';
+import { LocationFormData } from '../types/location.types';
+import { coordinatesToJson } from './utils/typeConverters';
 import QRCode from 'qrcode';
 
 export const createLocation = async (
@@ -39,7 +40,7 @@ export const createLocation = async (
       section: locationData.section || null,
       area: locationData.area || null,
       description: locationData.description || null,
-      coordinates: locationData.coordinates as Json, // Type cast ke Json
+      coordinates: coordinatesToJson(locationData.coordinates),
       photo_url: locationData.photo_url || null,
       qr_code: qrCodeDataUrl,
       created_by: createdBy,
@@ -48,12 +49,12 @@ export const createLocation = async (
 
     const { data, error } = await supabase
       .from('locations')
-      .insert(insertData)
+      .insert(insertData as any)
       .select()
       .single();
 
-    if (error) throw error;
-    
+    if (error || !data) throw error || new Error('Failed to create location');
+
     return data.id;
   } catch (error) {
     console.error('Error creating location:', error);
@@ -75,15 +76,15 @@ export const updateLocation = async (
       section: locationData.section,
       area: locationData.area,
       description: locationData.description,
-      coordinates: locationData.coordinates as Json, // Type cast
+      coordinates: coordinatesToJson(locationData.coordinates),
       photo_url: locationData.photo_url,
       updated_at: new Date().toISOString(),
     };
 
     const { error } = await supabase
       .from('locations')
-      .update(updateData)
-      .eq('id', locationId);
+      .update(updateData as any)
+      .filter('id', 'eq', locationId);
 
     if (error) throw error;
   } catch (error) {
@@ -97,7 +98,7 @@ export const deleteLocation = async (locationId: string): Promise<void> => {
     const { error } = await supabase
       .from('locations')
       .delete()
-      .eq('id', locationId);
+      .filter('id', 'eq', locationId);
 
     if (error) throw error;
   } catch (error) {
@@ -111,7 +112,7 @@ export const getLocationById = async (locationId: string) => {
     const { data, error } = await supabase
       .from('locations')
       .select('*')
-      .eq('id', locationId)
+      .filter('id', 'eq', locationId)
       .single();
 
     if (error) throw error;

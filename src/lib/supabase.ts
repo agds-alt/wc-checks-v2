@@ -44,7 +44,7 @@ const validateEnvironment = (): void => {
 
   // Validate URL format
   try {
-    new URL(supabaseUrl);
+    new URL(supabaseUrl!);
   } catch {
     const error = new SupabaseConfigError('Invalid VITE_SUPABASE_URL format');
     logger.error('Invalid Supabase URL', error);
@@ -64,7 +64,7 @@ const retryWithBackoff = async <T>(
   maxRetries: number = MAX_RETRIES,
   baseDelay: number = RETRY_DELAY
 ): Promise<T> => {
-  let lastError: Error;
+  let lastError: Error = new Error('Operation failed');
   
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
@@ -89,18 +89,21 @@ const retryWithBackoff = async <T>(
   throw lastError!;
 };
 
+// Browser check for localStorage
+const isBrowser = typeof window !== 'undefined';
+
 // Create Supabase client with enhanced configuration
 export const createSupabaseClient = () => {
   try {
     validateEnvironment();
-    
-    const client = createClient<Database>(supabaseUrl, supabaseKey, {
+
+    const client = createClient<Database>(supabaseUrl!, supabaseKey!, {
       auth: {
         autoRefreshToken: true,
         persistSession: true,
         detectSessionInUrl: true,
         flowType: 'pkce',
-        storage: localStorage,
+        storage: isBrowser ? localStorage : undefined,
       },
       realtime: {
         params: {
@@ -181,7 +184,7 @@ export const getConnectionStatus = async (): Promise<{
   timestamp: string;
 }> => {
   try {
-    const startTime = performance.now();
+    const startTime = isBrowser ? performance.now() : Date.now();
     
     // Test basic connectivity
     const { error: authError } = await supabase.auth.getSession();
@@ -193,7 +196,9 @@ export const getConnectionStatus = async (): Promise<{
       .limit(1)
       .single();
 
-    const responseTime = Math.round(performance.now() - startTime);
+    const responseTime = isBrowser
+      ? Math.round(performance.now() - (startTime as number))
+      : Math.round(Date.now() - (startTime as number));
 
     const status = {
       connected: !authError && !dbError,
@@ -226,11 +231,13 @@ const withLogging = <T extends (...args: any[]) => any>(
 ): T => {
   return (async (...args: any[]) => {
     const endTimer = logger.startTimer(operation);
-    const startTime = performance.now();
+    const startTime = isBrowser ? performance.now() : Date.now();
     
     try {
       const result = await fn(...args);
-      const duration = performance.now() - startTime;
+      const duration = isBrowser
+        ? performance.now() - startTime
+        : Date.now() - startTime;
       
       endTimer();
 
@@ -248,7 +255,9 @@ const withLogging = <T extends (...args: any[]) => any>(
 
       return result;
     } catch (error) {
-      const duration = performance.now() - startTime;
+      const duration = isBrowser
+        ? performance.now() - startTime
+        : Date.now() - startTime;
       endTimer();
       
       logger.error(`${operation} exception`, {
@@ -271,7 +280,7 @@ export const db = {
         supabase
           .from('users')
           .select('id, email, full_name, phone, profile_photo_url, occupation_id, is_active, last_login_at, created_at, updated_at')
-          .eq('id', userId)
+          .filter('id', 'eq', userId)
           .single()
     ),
     
@@ -280,8 +289,8 @@ export const db = {
       (userId: string) =>
         supabase
           .from('users')
-          .update({ last_login_at: new Date().toISOString() })
-          .eq('id', userId)
+          .update({ last_login_at: new Date().toISOString() } as any)
+          .filter('id', 'eq', userId)
     ),
   },
 
@@ -293,8 +302,8 @@ export const db = {
         supabase
           .from('buildings')
           .select('*')
-          .eq('organization_id', organizationId)
-          .eq('is_active', true)
+          .filter('organization_id', 'eq', organizationId)
+          .filter('is_active', 'eq', true)
           .order('name')
     ),
     
@@ -304,7 +313,7 @@ export const db = {
         supabase
           .from('buildings')
           .select('*')
-          .eq('id', buildingId)
+          .filter('id', 'eq', buildingId)
           .single()
     ),
   },
@@ -317,8 +326,8 @@ export const db = {
         supabase
           .from('locations')
           .select('*')
-          .eq('organization_id', organizationId)
-          .eq('is_active', true)
+          .filter('organization_id', 'eq', organizationId)
+          .filter('is_active', 'eq', true)
           .order('name')
     ),
     
@@ -328,7 +337,7 @@ export const db = {
         supabase
           .from('locations_with_details')
           .select('*')
-          .eq('id', locationId)
+          .filter('id', 'eq', locationId)
           .single()
     ),
     
@@ -338,7 +347,7 @@ export const db = {
         supabase
           .from('locations')
           .select('*')
-          .eq('qr_code', qrCode)
+          .filter('qr_code', 'eq', qrCode)
           .single()
     ),
   },
@@ -350,7 +359,7 @@ export const db = {
       (record: Database['public']['Tables']['inspection_records']['Insert']) =>
         supabase
           .from('inspection_records')
-          .insert(record)
+          .insert(record as any)
           .select()
           .single()
     ),
@@ -361,7 +370,7 @@ export const db = {
         supabase
           .from('inspection_records')
           .select('*')
-          .eq('user_id', userId)
+          .filter('user_id', 'eq', userId)
           .order('inspection_date', { ascending: false })
           .limit(limit)
     ),
@@ -372,7 +381,7 @@ export const db = {
         supabase
           .from('inspection_records')
           .select('*')
-          .eq('location_id', locationId)
+          .filter('location_id', 'eq', locationId)
           .order('inspection_date', { ascending: false })
     ),
   },
@@ -385,7 +394,7 @@ export const db = {
         supabase
           .from('inspection_templates')
           .select('*')
-          .eq('is_active', true)
+          .filter('is_active', 'eq', true)
           .order('name')
     ),
     
@@ -395,8 +404,8 @@ export const db = {
         supabase
           .from('inspection_templates')
           .select('*')
-          .eq('is_default', true)
-          .eq('is_active', true)
+          .filter('is_default', 'eq', true)
+          .filter('is_active', 'eq', true)
           .single()
     ),
   },
@@ -419,8 +428,8 @@ export const db = {
         supabase
           .from('photos')
           .select('*')
-          .eq('inspection_id', inspectionId)
-          .eq('is_deleted', false)
+          .filter('inspection_id', 'eq', inspectionId)
+          .filter('is_deleted', 'eq', false)
     ),
   },
 };

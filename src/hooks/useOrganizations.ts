@@ -1,6 +1,6 @@
 // src/hooks/useOrganizations.ts - Organizations CRUD via Backend API
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
+import { getAuthToken } from '../lib/auth';
 import toast from 'react-hot-toast';
 
 // Helper function to safely parse JSON responses
@@ -33,8 +33,7 @@ export function useOrganizations() {
   return useQuery({
     queryKey: ['organizations'],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) throw new Error('No authentication token');
 
@@ -59,8 +58,7 @@ export function useCreateOrganization() {
 
   return useMutation({
     mutationFn: async (data: Partial<Organization>) => {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) throw new Error('No authentication token');
 
@@ -96,8 +94,7 @@ export function useUpdateOrganization() {
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<Organization> }) => {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) throw new Error('No authentication token');
 
@@ -135,8 +132,7 @@ export function useDeleteOrganization() {
     mutationFn: async (id: string) => {
       console.log('🗑️ [useDeleteOrganization] Starting delete for organization:', id);
 
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         console.error('❌ [useDeleteOrganization] No authentication token');

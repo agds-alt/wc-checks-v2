@@ -24,27 +24,27 @@ export const uploadPhoto = async (
     const fileUrl = await uploadToCloudinary(photoData.file);
 
     // Create photo record in database dengan TablesInsert type
-    const photoRecord: TablesInsert<'photos'> = {
+    const photoRecord = {
       file_url: fileUrl,
       file_name: photoData.file.name,
       file_size: photoData.file.size,
       mime_type: photoData.file.type,
-      caption: photoData.caption || null,
-      field_reference: photoData.field_reference || null,
-      inspection_id: photoData.inspection_id || null,
-      location_id: photoData.location_id || null,
-      uploaded_by: userId, // ✅ This field exists in TablesInsert<'photos'>
+      caption: photoData.caption ?? null,
+      field_reference: photoData.field_reference ?? null,
+      inspection_id: photoData.inspection_id ?? null,
+      location_id: photoData.location_id ?? null,
+      uploaded_by: userId,
       uploaded_at: new Date().toISOString(),
       is_deleted: false,
-    };
+    } as unknown as TablesInsert<'photos'>;
 
     const { data, error } = await supabase
       .from('photos')
-      .insert(photoRecord)
+      .insert(photoRecord as any)
       .select()
       .single();
 
-    if (error) throw error;
+    if (error || !data) throw error || new Error('Failed to upload photo');
 
     return data.id;
   } catch (error) {
@@ -61,8 +61,8 @@ export const deletePhoto = async (photoId: string, userId: string): Promise<void
         is_deleted: true,
         deleted_at: new Date().toISOString(),
         deleted_by: userId,
-      })
-      .eq('id', photoId);
+      } as any)
+      .filter('id', 'eq', photoId);
 
     if (error) throw error;
   } catch (error) {
@@ -76,8 +76,8 @@ export const getPhotosByInspection = async (inspectionId: string) => {
     const { data, error } = await supabase
       .from('photos')
       .select('*')
-      .eq('inspection_id', inspectionId)
-      .eq('is_deleted', false)
+      .filter('inspection_id', 'eq', inspectionId)
+      .filter('is_deleted', 'eq', false)
       .order('uploaded_at', { ascending: false });
 
     if (error) throw error;
@@ -93,8 +93,8 @@ export const getPhotosByLocation = async (locationId: string) => {
     const { data, error } = await supabase
       .from('photos')
       .select('*')
-      .eq('location_id', locationId)
-      .eq('is_deleted', false)
+      .filter('location_id', 'eq', locationId)
+      .filter('is_deleted', 'eq', false)
       .order('uploaded_at', { ascending: false });
 
     if (error) throw error;

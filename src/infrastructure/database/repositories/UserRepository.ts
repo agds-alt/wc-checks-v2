@@ -28,7 +28,7 @@ export class UserRepository implements IUserRepository {
     return this.mapToEntity(data);
   }
 
-  async findByOrganization(organizationId: string): Promise<User[]> {
+  async findByOrganization(_organizationId: string): Promise<User[]> {
     // Note: Users are no longer directly linked to organizations in the new schema
     // This method is deprecated. Use UserRole relationships instead
     console.warn('findByOrganization is deprecated - users are not directly linked to organizations');
@@ -83,6 +83,38 @@ export class UserRepository implements IUserRepository {
 
     if (error || !data) return [];
     return data.map(this.mapToEntity);
+  }
+
+  async getUserRoleLevel(userId: string): Promise<{ level: number; roleName: string } | null> {
+    const { data, error } = await this.supabase
+      .from('user_roles')
+      .select('role_id, roles(name, level)')
+      .eq('user_id', userId)
+      .order('roles(level)', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error || !data) return null;
+
+    const role = data.roles as any;
+    return {
+      level: role?.level || 0,
+      roleName: role?.name || 'viewer',
+    };
+  }
+
+  async getDefaultOrganization(): Promise<{ id: string; name: string } | null> {
+    const { data, error } = await this.supabase
+      .from('organizations')
+      .select('id, name')
+      .eq('short_code', 'DEFAULT')
+      .single();
+
+    if (error || !data) return null;
+    return {
+      id: data.id,
+      name: data.name,
+    };
   }
 
   private mapToEntity(data: any): User {

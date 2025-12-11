@@ -3,9 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
 import { Eye, EyeOff, Mail, Lock, AlertCircle, Loader2 } from 'lucide-react';
-import { authStorage } from '@/lib/authStorage';
+import { trpc } from '@/lib/trpc/client';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -19,6 +18,30 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Use tRPC login mutation
+  const loginMutation = trpc.auth.login.useMutation({
+    onSuccess: (data) => {
+      // Save token to localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('sb-auth-token', data.token);
+      }
+
+      setSuccessMessage('Berhasil masuk! Mengalihkan...');
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 500);
+    },
+    onError: (err: any) => {
+      console.error('Login error:', err);
+
+      if (err.message.includes('Invalid credentials')) {
+        setError('Email atau kata sandi tidak valid. Silakan coba lagi.');
+      } else {
+        setError(err.message || 'Gagal masuk. Silakan coba lagi.');
+      }
+    },
+  });
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,34 +59,18 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // ✅ CLEAR old storage before new login
-      authStorage.clear();
+      // Clear old token
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('sb-auth-token');
+      }
 
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      // Call tRPC login mutation
+      await loginMutation.mutateAsync({
         email: email.trim(),
         password: password,
       });
-
-      if (signInError) {
-        throw signInError;
-      }
-
-      if (data?.user) {
-        setSuccessMessage('Berhasil masuk! Mengalihkan...');
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 500);
-      }
     } catch (err: any) {
-      console.error('Login error:', err);
-
-      if (err.message.includes('Invalid login credentials')) {
-        setError('Email atau kata sandi tidak valid. Silakan coba lagi.');
-      } else if (err.message.includes('Email not confirmed')) {
-        setError('Harap verifikasi alamat email Anda sebelum masuk.');
-      } else {
-        setError(err.message || 'Gagal masuk. Silakan coba lagi.');
-      }
+      // Error handled by onError callback
     } finally {
       setIsLoading(false);
     }
@@ -76,22 +83,8 @@ export default function LoginPage() {
       return;
     }
 
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-
-      if (resetError) throw resetError;
-
-      setSuccessMessage('Tautan reset kata sandi telah dikirim! Periksa email Anda.');
-    } catch (err: any) {
-      setError(err.message || 'Gagal mengirim email reset');
-    } finally {
-      setIsLoading(false);
-    }
+    // TODO: Implement forgot password via tRPC
+    setError('Fitur lupa kata sandi sedang dalam pengembangan. Hubungi administrator.');
   };
 
   return (

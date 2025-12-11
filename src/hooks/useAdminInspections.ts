@@ -1,7 +1,8 @@
 // src/hooks/useAdminInspections.ts - Admin-level Inspections view via backend API
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
+import { getAuthToken } from '../lib/auth';
 import type { Tables } from '../types/database.types';
+import { parseErrorResponse } from '../lib/utils/apiHelpers';
 
 type InspectionRecord = Tables<'inspection_records'>;
 
@@ -42,16 +43,13 @@ export function useAdminInspections({
   userId,
   locationId,
   date,
-  limit = 100,
+  limit = 1000,
   enabled = true,
 }: UseAdminInspectionsOptions = {}) {
   return useQuery({
     queryKey: ['admin-inspections', userId, locationId, date, limit],
     queryFn: async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         throw new Error('No authentication token');
@@ -73,8 +71,8 @@ export function useAdminInspections({
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to fetch admin inspections');
+        const errorMessage = await parseErrorResponse(response, 'Failed to fetch admin inspections');
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
@@ -94,10 +92,7 @@ export function useAdminInspection(inspectionId?: string) {
     queryFn: async () => {
       if (!inspectionId) return null;
 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         throw new Error('No authentication token');
@@ -110,8 +105,8 @@ export function useAdminInspection(inspectionId?: string) {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to fetch inspection');
+        const errorMessage = await parseErrorResponse(response, 'Failed to fetch inspection');
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();

@@ -8,7 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { useLocations, useDeleteLocation } from '@/hooks/useLocations';
 import { Tables, TablesInsert } from '@/types/database.types';
-import { Plus, Edit2, Trash2, MapPin, QrCode, Search, MoreVertical, Copy, User, ShieldAlert, Menu, CheckSquare, Square, Download, BarChart3, X, Check, Power, PowerOff } from 'lucide-react';
+import { Plus, Edit2, Trash2, MapPin, QrCode, Search, MoreVertical, Copy, User, ShieldAlert, Menu, CheckSquare, Square, Download, BarChart3, X, Power, PowerOff } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { QRCodeGenerator } from '@/components/admin/QRCodeGenerator';
@@ -177,7 +177,7 @@ export default function LocationsManager() {
     */
   };
 
-  const handleBulkActivate = (isActive: boolean) => {
+  const handleBulkActivate = (_isActive: boolean) => {
     toast.error('Bulk operations not yet implemented');
     /*
     if (selectedIds.size === 0) {
@@ -697,7 +697,7 @@ const LocationFormModal = ({ location, onClose, onSuccess }: LocationFormModalPr
   const [organizations, setOrganizations] = useState<any[]>([]);
   const [buildings, setBuildings] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [loadingOrganizations, setLoadingOrganizations] = useState(true);
+  const [_loadingOrganizations, setLoadingOrganizations] = useState(true);
 
   const [formData, setFormData] = useState<Partial<LocationInsert>>({
     name: location?.name || '',
@@ -789,7 +789,7 @@ const LocationFormModal = ({ location, onClose, onSuccess }: LocationFormModalPr
 
         const { error } = await supabase
           .from('locations')
-          .update(updateData)
+          .update(updateData as any)
           .filter('id', 'eq', location.id);
 
         if (error) throw error;
@@ -806,8 +806,10 @@ const LocationFormModal = ({ location, onClose, onSuccess }: LocationFormModalPr
         }
 
         // Generate QR code
-        const orgCode = (building.organizations as any).short_code;
-        const buildingCode = (building as any).short_code || (building as any).code;
+        const buildingData = building as any;
+        const orgData = buildingData.organizations || {};
+        const orgCode = orgData.short_code || orgData.code || 'ORG';
+        const buildingCode = buildingData.short_code || buildingData.code || 'BLD';
         const locationCode = data.code || 'LOC';
         const uniqueId = Date.now().toString(36).slice(-4);
 
@@ -815,7 +817,7 @@ const LocationFormModal = ({ location, onClose, onSuccess }: LocationFormModalPr
 
         const newLocation: LocationInsert = {
           name: data.name!,
-          code: data.code,
+          code: data.code || '',
           organization_id: data.organization_id!,
           building_id: data.building_id!,
           floor: data.floor,
@@ -829,7 +831,7 @@ const LocationFormModal = ({ location, onClose, onSuccess }: LocationFormModalPr
 
         const { error } = await supabase
           .from('locations')
-          .insert(newLocation);
+          .insert(newLocation as any);
 
         if (error) throw error;
       }

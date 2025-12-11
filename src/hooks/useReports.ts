@@ -1,7 +1,8 @@
 // src/hooks/useReports.ts - FIXED VERSION using API endpoints with admin support
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
+import { getAuthToken } from '../lib/auth';
 import { format } from 'date-fns';
+import { parseErrorResponse } from '../lib/utils/apiHelpers';
 
 export interface InspectionReport {
   id: string;
@@ -61,8 +62,7 @@ export const useMonthlyInspections = (
       console.log('📅 Fetching monthly inspections:', { userId: userId || 'ALL', month });
 
       // Get auth token
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         throw new Error('No authentication token');
@@ -83,9 +83,9 @@ export const useMonthlyInspections = (
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: response.statusText }));
-        console.error('❌ Error fetching monthly inspections:', errorData);
-        throw new Error(errorData.error || 'Failed to fetch monthly inspections');
+        const errorMessage = await parseErrorResponse(response, 'Failed to fetch monthly inspections');
+        console.error('❌ Error fetching monthly inspections:', errorMessage);
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
@@ -125,8 +125,7 @@ export const useDateInspections = (
       console.log('📅 Fetching inspections for date:', { userId: userId || 'ALL', date });
 
       // Get auth token
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         throw new Error('No authentication token');
@@ -147,9 +146,9 @@ export const useDateInspections = (
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: response.statusText }));
-        console.error('❌ Error fetching date inspections:', errorData);
-        throw new Error(errorData.error || 'Failed to fetch date inspections');
+        const errorMessage = await parseErrorResponse(response, 'Failed to fetch date inspections');
+        console.error('❌ Error fetching date inspections:', errorMessage);
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();

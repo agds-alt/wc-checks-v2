@@ -154,8 +154,10 @@ export default function AddLocationPage() {
       console.log('✅ Building found:', building);
 
       // Generate QR code
-      const orgCode = (building.organizations as any).short_code;
-      const buildingCode = (building as any).short_code || (building as any).code;
+      const buildingData = building as any;
+      const orgData = buildingData.organizations || {};
+      const orgCode = orgData.short_code || orgData.code || 'ORG';
+      const buildingCode = buildingData.short_code || buildingData.code || 'BLD';
       const locationCode = data.code || 'LOC';
       const uniqueId = Date.now().toString(36).slice(-4);
 
@@ -165,7 +167,7 @@ export default function AddLocationPage() {
       // Create location object
       const newLocation: LocationInsert = {
         name: data.name.trim(),
-        code: data.code.trim() || null,
+        code: data.code?.trim() || '',
         organization_id: data.organization_id,
         building_id: data.building_id,
         floor: data.floor.trim() || null,
@@ -181,7 +183,7 @@ export default function AddLocationPage() {
 
       const { data: newLocationData, error } = await supabase
         .from('locations')
-        .insert(newLocation)
+        .insert(newLocation as any)
         .select()
         .single();
 

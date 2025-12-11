@@ -5,7 +5,8 @@ import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { getAuthToken } from '@/lib/auth';
+import { parseErrorResponse } from '@/lib/utils/apiHelpers';
 import {
   BarChart3,
   TrendingUp,
@@ -83,8 +84,7 @@ export default function AnalyticsPage() {
       });
 
       // Get auth token
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = getAuthToken();
 
       if (!token) {
         throw new Error('No authentication token');
@@ -103,9 +103,9 @@ export default function AnalyticsPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: response.statusText }));
-        console.error('[Analytics] API error:', errorData);
-        throw new Error(errorData.error || 'Failed to fetch analytics');
+        const errorMessage = await parseErrorResponse(response, 'Failed to fetch analytics');
+        console.error('[Analytics] API error:', errorMessage);
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();

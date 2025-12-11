@@ -52,7 +52,9 @@ export const userRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      const { id, ...updateData } = input;
+      const { id, name, ...restData } = input;
+      const updateData: any = { ...restData };
+      if (name) updateData.full_name = name;
       return userRepo.update(id, updateData);
     }),
 

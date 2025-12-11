@@ -12,6 +12,9 @@ interface LogEntry {
   userAgent: string;
 }
 
+// Check if running in browser
+const isBrowser = typeof window !== 'undefined';
+
 class Logger {
   private sessionId: string;
   private userId?: string;
@@ -21,10 +24,16 @@ class Logger {
 
   constructor() {
     this.sessionId = this.getOrCreateSessionId();
-    this.initSession();
+    if (isBrowser) {
+      this.initSession();
+    }
   }
 
   private getOrCreateSessionId(): string {
+    if (!isBrowser) {
+      return `server-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    }
+
     let sessionId = sessionStorage.getItem('app_session_id');
     if (!sessionId) {
       sessionId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -34,6 +43,8 @@ class Logger {
   }
 
   private initSession() {
+    if (!isBrowser) return;
+
     this.info('Session started', {
       sessionId: this.sessionId,
       timestamp: new Date().toISOString(),
@@ -58,24 +69,26 @@ class Logger {
       data,
       sessionId: this.sessionId,
       userId: this.userId,
-      url: window.location.href,
-      userAgent: navigator.userAgent,
+      url: isBrowser ? window.location.href : 'server',
+      userAgent: isBrowser ? navigator.userAgent : 'server',
     };
   }
 
   private addLog(entry: LogEntry) {
     this.logs.push(entry);
-    
+
     // Keep only last N logs
     if (this.logs.length > this.maxLogs) {
       this.logs.shift();
     }
 
-    // Store in localStorage for persistence
-    try {
-      localStorage.setItem('app_logs', JSON.stringify(this.logs.slice(-20)));
-    } catch (e) {
-      // Ignore quota errors
+    // Store in localStorage for persistence (browser only)
+    if (isBrowser) {
+      try {
+        localStorage.setItem('app_logs', JSON.stringify(this.logs.slice(-20)));
+      } catch (e) {
+        // Ignore quota errors
+      }
     }
   }
 
@@ -114,16 +127,25 @@ class Logger {
 
   // Performance tracking
   startTimer(label: string): () => void {
+    if (!isBrowser) {
+      // Server-side fallback
+      const startTime = Date.now();
+      return () => {
+        const duration = Date.now() - startTime;
+        this.info(`⏱️ Timer ended: ${label}`, { duration: `${duration}ms` });
+      };
+    }
+
     const startTime = performance.now();
     this.debug(`⏱️ Timer started: ${label}`);
-    
+
     return () => {
       const duration = performance.now() - startTime;
-      this.info(`⏱️ Timer ended: ${label}`, { 
+      this.info(`⏱️ Timer ended: ${label}`, {
         duration: `${duration.toFixed(2)}ms`,
-        slow: duration > 1000 
+        slow: duration > 1000
       });
-      
+
       if (duration > 1000) {
         this.warn(`Slow operation detected: ${label}`, { duration });
       }
@@ -164,12 +186,14 @@ class Logger {
   // Clear logs
   clearLogs() {
     this.logs = [];
-    localStorage.removeItem('app_logs');
+    if (isBrowser) {
+      localStorage.removeItem('app_logs');
+    }
     this.info('Logs cleared');
   }
 
   // Send error to server (implement based on your backend)
-  private async sendErrorToServer(entry: LogEntry) {
+  private async sendErrorToServer(_entry: LogEntry) {
     if (process.env.NODE_ENV !== 'production') return; // Only in production
     
     try {
@@ -188,28 +212,31 @@ class Logger {
 // Singleton instance
 export const logger = new Logger();
 
-// Intercept console errors
-window.addEventListener('error', (event) => {
-  logger.error('Uncaught error', {
-    message: event.message,
-    filename: event.filename,
-    lineno: event.lineno,
-    colno: event.colno,
-    error: event.error,
+// Browser-only event listeners
+if (isBrowser) {
+  // Intercept console errors
+  window.addEventListener('error', (event) => {
+    logger.error('Uncaught error', {
+      message: event.message,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+      error: event.error,
+    });
   });
-});
 
-// Intercept unhandled promise rejections
-window.addEventListener('unhandledrejection', (event) => {
-  logger.error('Unhandled promise rejection', {
-    reason: event.reason,
+  // Intercept unhandled promise rejections
+  window.addEventListener('unhandledrejection', (event) => {
+    logger.error('Unhandled promise rejection', {
+      reason: event.reason,
+    });
   });
-});
 
-// Log page navigation
-window.addEventListener('popstate', () => {
-  logger.info('Navigation', { 
-    url: window.location.href,
-    type: 'popstate' 
+  // Log page navigation
+  window.addEventListener('popstate', () => {
+    logger.info('Navigation', {
+      url: window.location.href,
+      type: 'popstate'
+    });
   });
-});
+}

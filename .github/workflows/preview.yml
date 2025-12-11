@@ -1,0 +1,69 @@
+name: Preview Deployment
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main, master, develop]
+
+concurrency:
+  group: preview-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy-preview:
+    name: Deploy Preview to Vercel
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build for preview
+        run: pnpm build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL_DEV }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY_DEV }}
+          NEXT_PUBLIC_APP_URL: https://wc-checks-pr-${{ github.event.pull_request.number }}.vercel.app
+          SKIP_TYPE_CHECK: true
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        id: vercel-deploy
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          scope: ${{ secrets.VERCEL_ORG_ID }}
+          alias-domains: |
+            wc-checks-pr-${{ github.event.pull_request.number }}.vercel.app
+
+      - name: Comment PR with preview URL
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const comment = `## 🚀 Preview Deployment Ready!
+
+            ✅ Your preview deployment is ready at:
+            🔗 **[https://wc-checks-pr-${{ github.event.pull_request.number }}.vercel.app](https://wc-checks-pr-${{ github.event.pull_request.number }}.vercel.app)**
+
+            ### Deployment Details:
+            - **Commit**: \`${{ github.sha }}\`
+            - **Branch**: \`${{ github.head_ref }}\`
+            - **Deployed at**: ${new Date().toISOString()}
+
+            ---
+            _This preview will be automatically updated with new commits._`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

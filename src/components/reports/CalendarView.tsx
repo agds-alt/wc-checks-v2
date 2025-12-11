@@ -19,12 +19,12 @@ interface CalendarViewProps {
 }
 
 // Reserved for future use - alternative color scheme
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const getScoreColor = (score: number) => {
-  if (score >= 85) return 'bg-green-500';
-  if (score >= 70) return 'bg-yellow-500';
-  return 'bg-red-500';
-};
+// Utility function for score-based styling (reserved for future use)
+// const getScoreColor = (score: number) => {
+//   if (score >= 85) return 'bg-green-500';
+//   if (score >= 70) return 'bg-yellow-500';
+//   return 'bg-red-500';
+// };
 
 const getScoreStyle = (score: number) => {
   if (score >= 85) {

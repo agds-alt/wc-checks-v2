@@ -1,27 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { supabase } from '@/lib/supabase';
+import { trpc } from '@/lib/trpc/client';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Tables } from '@/types/database.types';
-
-// Type dari database
-type Occupation = Tables<'user_occupations'>;
 
 const registerSchema = z.object({
-  full_name: z.string().min(2, 'Full name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
+  full_name: z.string().min(2, 'Nama lengkap minimal 2 karakter'),
+  email: z.string().email('Email tidak valid'),
   phone: z.string().optional(),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string().min(6, 'Kata sandi minimal 6 karakter'),
   confirmPassword: z.string(),
-  occupation_id: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
+  message: "Kata sandi tidak cocok",
   path: ["confirmPassword"],
 });
 
@@ -29,8 +24,6 @@ type RegisterForm = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const [occupations, setOccupations] = useState<Occupation[]>([]);
-  const [loadingOccupations, setLoadingOccupations] = useState(true);
   const router = useRouter();
 
   const {
@@ -41,101 +34,46 @@ export default function RegisterPage() {
     resolver: zodResolver(registerSchema),
   });
 
-  // Fetch occupations
-  useEffect(() => {
-    const fetchOccupations = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('user_occupations')
-          .select('*')
-          .filter('is_active', 'eq', true)
-          .order('display_name');
-
-        if (error) throw error;
-
-        // Set occupations - cast from Supabase type
-        setOccupations((data as unknown as Occupation[]) || []);
-      } catch (error) {
-        console.error('Error fetching occupations:', error);
-        setOccupations([]);
-      } finally {
-        setLoadingOccupations(false);
+  // Use tRPC register mutation
+  const registerMutation = trpc.auth.register.useMutation({
+    onSuccess: (data) => {
+      // Save token to localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('sb-auth-token', data.token);
       }
-    };
 
-    fetchOccupations();
-  }, []);
+      toast.success('Registrasi berhasil! Mengalihkan ke dashboard...');
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 1000);
+    },
+    onError: (err: any) => {
+      console.error('Registration error:', err);
+
+      let userMessage = err.message || 'Gagal mendaftar';
+
+      if (err.message.includes('already exists')) {
+        userMessage = 'Email sudah terdaftar. Silakan gunakan email lain atau login.';
+      }
+
+      toast.error(userMessage);
+      setIsLoading(false);
+    },
+  });
 
   const onSubmit = async (data: RegisterForm) => {
     setIsLoading(true);
 
     try {
-      // 1. Auth signup
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: data.email,
+      // Call tRPC register mutation
+      await registerMutation.mutateAsync({
+        email: data.email.trim(),
         password: data.password,
-        options: {
-          data: { full_name: data.full_name }
-        }
+        full_name: data.full_name.trim(),
+        phone: data.phone?.trim(),
       });
-
-      if (authError) throw authError;
-
-      if (!authData.user) {
-        throw new Error('Failed to create user account');
-      }
-
-      // 2. Create profile (occupation_id langsung di users table)
-      const { error: profileError } = await supabase
-        .from('users')
-        .insert({
-          id: authData.user.id,
-          email: data.email,
-          full_name: data.full_name,
-          password_hash: 'supabase_auth',
-          occupation_id: data.occupation_id || null,
-          is_active: true,
-          phone: data.phone?.trim() || null,
-          profile_photo_url: null,
-          last_login_at: null,
-          created_at: authData.user.created_at, // Use Supabase auth timestamp
-        } as any);
-
-      if (profileError) {
-        // CRITICAL: Profile creation failed but auth user exists
-        // Attempt cleanup by signing out the newly created user
-        await supabase.auth.signOut();
-
-        throw new Error(
-          `Failed to create profile: ${profileError.message}\n` +
-          'Your authentication account was created but profile setup failed. ' +
-          'Please try registering again with the same email.'
-        );
-      }
-
-      toast.success('Registration successful! Please check your email to verify your account.');
-      router.push('/login');
-
-    } catch (error: any) {
-      console.error('Registration error:', error);
-
-      let userMessage = error.message;
-
-      // Handle specific error cases
-      if (error.message.includes('password_hash')) {
-        userMessage = 'Database configuration error. Please contact administrator.';
-      } else if (error.message.includes('users_pkey')) {
-        userMessage = 'User already exists with this email.';
-      } else if (error.message.includes('User already registered')) {
-        userMessage = 'This email is already registered. Please try logging in.';
-      } else if (error.message.includes('Failed to create profile')) {
-        // Use the detailed error message from above
-        userMessage = error.message;
-      }
-
-      toast.error(userMessage);
-    } finally {
-      setIsLoading(false);
+    } catch (err: any) {
+      // Error handled by onError callback
     }
   };
 
@@ -196,30 +134,6 @@ export default function RegisterPage() {
             />
             {errors.phone && (
               <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
-            )}
-          </div>
-
-          {/* Occupation */}
-          <div>
-            <label htmlFor="occupation_id" className="block text-sm font-medium text-gray-700">
-              Occupation (Optional)
-            </label>
-            {loadingOccupations ? (
-              <div className="mt-1 block w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-2xl">
-                <span className="text-gray-500">Loading...</span>
-              </div>
-            ) : (
-              <select
-                {...register('occupation_id')}
-                className="mt-1 block w-full px-4 py-3 bg-white border border-gray-300 rounded-2xl shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Select your occupation</option>
-                {occupations.map((occ) => (
-                  <option key={occ.id} value={occ.id}>
-                    {occ.icon} {occ.display_name}
-                  </option>
-                ))}
-              </select>
             )}
           </div>
 
