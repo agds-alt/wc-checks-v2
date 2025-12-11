@@ -1,20 +1,10 @@
 {
   "buildCommand": "pnpm run build",
   "installCommand": "corepack enable && corepack prepare pnpm@9.15.0 --activate && pnpm install",
-  "outputDirectory": "dist",
-  "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "/api/:path*"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ],
+  "framework": "nextjs",
   "headers": [
     {
-      "source": "/assets/(.*)",
+      "source": "/_next/static/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
