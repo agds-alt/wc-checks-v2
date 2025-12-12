@@ -60,8 +60,8 @@ export class SessionService {
     const newToken = await jwtService.refreshToken(token);
     if (!newToken) return null;
 
-    // Extend session in Redis
-    await cacheService.extendSession(payload.sessionId, 7 * 24 * 60 * 60);
+    // Extend session in Redis (30 days)
+    await cacheService.extendSession(payload.sessionId, 30 * 24 * 60 * 60);
 
     return newToken;
   }

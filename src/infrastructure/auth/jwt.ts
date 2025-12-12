@@ -22,8 +22,8 @@ const JWT_SECRET = new TextEncoder().encode(
 );
 
 const JWT_ALGORITHM = 'HS256';
-const DEFAULT_EXPIRATION = '7d'; // 7 days
-const SESSION_EXPIRATION = 7 * 24 * 60 * 60; // 7 days in seconds
+const DEFAULT_EXPIRATION = '30d'; // 30 days (extended for inspection workflow)
+const SESSION_EXPIRATION = 30 * 24 * 60 * 60; // 30 days in seconds
 
 export class JWTService {
   /**
