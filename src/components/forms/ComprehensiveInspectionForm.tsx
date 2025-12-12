@@ -35,7 +35,8 @@ export const ComprehensiveInspectionForm = ({
   const genZMode = true;
   const router = useRouter();
   const { user, profile } = useAuth();
-  const { useGetLocation, submitInspection } = useInspection();
+  const { useGetLocation, getDefaultTemplate, useSubmitInspection } = useInspection();
+  const submitInspection = useSubmitInspection();
 
   // Refs for cleanup
   const isMountedRef = useRef(true);
@@ -69,7 +70,8 @@ export const ComprehensiveInspectionForm = ({
     INSPECTION_COMPONENTS[0].id
   );
 
-  const { data: location, isLoading: locationLoading } = useGetLocation(locationId);
+  const { data: locationData, isLoading: locationLoading } = useGetLocation(locationId);
+  const location = locationData as any; // Type assertion for tRPC inference issue
 
   // Debug: Log when showSuccessModal changes
   useEffect(() => {
@@ -103,7 +105,7 @@ export const ComprehensiveInspectionForm = ({
   const handleRatingChange = (componentId: InspectionComponent, choice: RatingChoice) => {
     const existing = ratings.get(componentId) || {
       component: componentId,
-      choice: 'good',
+      choice: 3, // Default to 3 stars
     };
     setRatings(new Map(ratings.set(componentId, { ...existing, choice })));
 
@@ -145,19 +147,7 @@ export const ComprehensiveInspectionForm = ({
       return false;
     }
 
-    // Validate "other" choice must have notes
-    const otherWithoutNotes = Array.from(ratings.values()).filter(
-      (r) => r.choice === 'other' && !r.notes?.trim()
-    );
-
-    if (otherWithoutNotes.length > 0) {
-      const component = INSPECTION_COMPONENTS.find(
-        (c) => c.id === otherWithoutNotes[0].component
-      );
-      toast.error(`"${component?.labelGenZ}" pilih "Lainnya" tapi belum dikasih penjelasan!`);
-      setExpandedComponent(otherWithoutNotes[0].component);
-      return false;
-    }
+    // No need to validate "other" - we have 5-star system now
 
     // VALIDATE: General photos REQUIRED (min 1)
     if (generalPhotos.length === 0) {
@@ -296,16 +286,29 @@ const handleSubmit = async () => {
       }
     }
 
-    // Prepare responses
-    const responses: Record<string, any> = {
+    // Prepare inspection data
+    const now = new Date();
+    const inspectionDate = now.toISOString().split('T')[0]; // YYYY-MM-DD
+    const inspectionTime = now.toTimeString().split(' ')[0]; // HH:MM:SS
+
+    // Get template ID (use default template)
+    const template = getDefaultTemplate.data as any;
+    if (!template || !template.id) {
+      throw new Error('Template tidak ditemukan. Silakan refresh halaman.');
+    }
+    const templateId = template.id as string;
+
+    // Prepare inspection_data with all form data
+    const inspectionData: Record<string, any> = {
       ratings: Array.from(updatedRatings.values()),
       score: currentScore,
+      photos: uploadedUrls, // All uploaded photo URLs
       issues_found: issuesFound,
       issue_description: issuesFound ? issueDescription.trim() : null,
       requires_maintenance: requiresMaintenance,
       maintenance_priority: requiresMaintenance ? maintenancePriority : null,
       inspection_mode: genZMode ? 'genz' : 'professional',
-      submitted_at: new Date().toISOString(),
+      submitted_at: now.toISOString(),
       inspector: {
         id: user.id,
         name: profile?.full_name || user.email?.split('@')[0] || 'Unknown',
@@ -314,15 +317,25 @@ const handleSubmit = async () => {
       },
     };
 
-    // ✅ Submit to database with photo URLs (not files!)
+    // Calculate overall rating (1-4 scale for database)
+    // Convert score (0-100) to rating (1-4)
+    const overallRating = currentScore >= 85 ? 4 : currentScore >= 70 ? 3 : currentScore >= 50 ? 2 : 1;
+
+    // Determine status based on score
+    const status = currentScore >= 85 ? 'excellent' : currentScore >= 70 ? 'good' : currentScore >= 50 ? 'fair' : 'poor';
+
+    // ✅ Submit to database via tRPC
     console.log('📤 Submitting inspection to database...');
     await submitInspection.mutateAsync({
       location_id: locationId,
-      user_id: user.id,
-      responses,
-      photo_urls: uploadedUrls, // ✅ Pass URLs, not files
+      template_id: templateId,
+      inspection_date: inspectionDate,
+      inspection_time: inspectionTime,
+      inspection_data: inspectionData,
+      overall_rating: overallRating,
+      status: status,
       notes: generalNotes.trim() || undefined,
-      duration_seconds: durationSeconds,
+      duration_minutes: Math.ceil(durationSeconds / 60), // Convert to minutes
     });
 
     console.log('✅ Inspection submitted successfully!');
@@ -386,7 +399,7 @@ const handleSubmit = async () => {
 
   return (
     <div
-      className={`min-h-screen pb-32 ${
+      className={`min-h-screen pb-40 ${
         genZMode
           ? 'bg-gradient-to-br from-blue-50 via-cyan-50 to-indigo-50'
           : 'bg-gray-50'
@@ -766,20 +779,20 @@ const handleSubmit = async () => {
   </div>
 )}
 
-      {/* Submit Button (Sticky Bottom) */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 shadow-lg">
+      {/* Submit Button (Sticky Bottom - Above BottomNav) */}
+      <div className="fixed bottom-20 left-0 right-0 p-4 bg-gradient-to-t from-white via-white to-transparent z-30">
         <button
           type="button"
           onClick={handleSubmit}
           disabled={isSubmitting || completedCount < totalRequired || generalPhotos.length === 0}
           className={`
-            w-full py-4 rounded-xl font-bold text-white transition-all
+            w-full py-4 rounded-xl font-bold text-white transition-all shadow-lg
             ${
               isSubmitting || completedCount < totalRequired || generalPhotos.length === 0
                 ? 'bg-gray-300 cursor-not-allowed'
                 : genZMode
-                  ? 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700'
-                  : 'bg-blue-600 hover:bg-blue-700'
+                  ? 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 active:scale-95'
+                  : 'bg-blue-600 hover:bg-blue-700 active:scale-95'
             }
           `}
         >
@@ -787,7 +800,7 @@ const handleSubmit = async () => {
             ? (uploadProgress?.total || 0) > 0
               ? `📸 Upload ${uploadProgress?.current || 0}/${uploadProgress?.total || 0}...`
               : '⏳ Submitting...'
-            : `🚀 Submit (Score: ${currentScore})`}
+            : `🚀 Submit Inspection (${currentScore}/100)`}
         </button>
 
         {(completedCount < totalRequired || generalPhotos.length === 0) && (

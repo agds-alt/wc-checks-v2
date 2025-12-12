@@ -122,7 +122,7 @@ export default function LocationsListPage() {
   }, {} as Record<string, Location[]>);
 
   const handleSelectLocation = (locationId: string) => {
-    router.push(`/inspect/${locationId}`);
+    router.push(`/inspection/${locationId}`);
   };
 
   console.log('🟢 LocationsListPage: Render checks', {

@@ -13,7 +13,7 @@ export const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
 
   // Hide bottom nav di semua halaman inspection
   const showBottomNav = !(
-    pathname.includes('/inspect/') ||
+    pathname.includes('/inspection/') ||
     pathname.includes('/locations/') &&
     !pathname.includes('/admin/')
   );

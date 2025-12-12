@@ -1,8 +1,6 @@
-// src/hooks/useReports.ts - FIXED VERSION using API endpoints with admin support
-import { useQuery } from '@tanstack/react-query';
-import { getAuthToken } from '../lib/auth';
+// src/hooks/useReports.ts - tRPC VERSION
+import { trpc } from '@/lib/trpc/client';
 import { format } from 'date-fns';
-import { parseErrorResponse } from '../lib/utils/apiHelpers';
 
 export interface InspectionReport {
   id: string;
@@ -41,11 +39,11 @@ export interface DateInspections {
 }
 
 /**
- * Get inspections for a specific month
+ * Get inspections for a specific month (tRPC version)
  *
  * @param userId - Optional. If provided, filters to specific user. If not provided:
  *   - Admin (level >= 80): fetches ALL users' inspections
- *   - Regular user: fetches their own inspections
+ *   - Regular user: fetches their own inspections (enforced by backend)
  * @param currentDate - The month to fetch data for
  * @param enabled - Whether to enable the query (default true)
  */
@@ -54,59 +52,28 @@ export const useMonthlyInspections = (
   currentDate: Date,
   enabled: boolean = true
 ) => {
-  return useQuery({
-    queryKey: ['monthly-inspections', userId || 'all', format(currentDate, 'yyyy-MM')],
-    queryFn: async () => {
-      const month = format(currentDate, 'yyyy-MM');
+  const month = format(currentDate, 'yyyy-MM');
 
-      console.log('📅 Fetching monthly inspections:', { userId: userId || 'ALL', month });
+  console.log('📅 [Hook] useMonthlyInspections:', { userId: userId || 'auto', month, enabled });
 
-      // Get auth token
-      const token = getAuthToken();
-
-      if (!token) {
-        throw new Error('No authentication token');
-      }
-
-      // Build API URL
-      let apiUrl = `/api/reports?month=${month}`;
-      if (userId) {
-        apiUrl += `&userId=${userId}`;
-      }
-      // If no userId provided, admin will see ALL, regular users will see their own (backend handles this)
-
-      // Call API endpoint
-      const response = await fetch(apiUrl, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const errorMessage = await parseErrorResponse(response, 'Failed to fetch monthly inspections');
-        console.error('❌ Error fetching monthly inspections:', errorMessage);
-        throw new Error(errorMessage);
-      }
-
-      const result = await response.json();
-      const dateInspections: DateInspections[] = result.data;
-
-      console.log('✅ Fetched monthly inspections:', dateInspections.length, 'dates');
-
-      return dateInspections;
+  return trpc.inspection.getMonthlyReport.useQuery(
+    {
+      month,
+      userId,
     },
-    // ✅ FIX: Wait for admin check to complete before fetching
-    enabled: enabled,
-  });
+    {
+      enabled,
+    }
+  );
 };
 
 /**
- * Get inspections for a specific date
+ * Get inspections for a specific date (tRPC version)
  *
  * @param userId - Optional. If provided, filters to specific user. If not provided:
  *   - Admin (level >= 80): fetches ALL users' inspections
- *   - Regular user: fetches their own inspections
- * @param date - The specific date to fetch data for
+ *   - Regular user: fetches their own inspections (enforced by backend)
+ * @param date - The specific date to fetch data for (YYYY-MM-DD)
  * @param enabled - Whether to enable the query (default true)
  */
 export const useDateInspections = (
@@ -114,51 +81,15 @@ export const useDateInspections = (
   date: string,
   enabled: boolean = true
 ) => {
-  return useQuery({
-    queryKey: ['date-inspections', userId || 'all', date],
-    queryFn: async () => {
-      if (!date) {
-        console.warn('⚠️ Missing date');
-        return [];
-      }
+  console.log('📅 [Hook] useDateInspections:', { userId: userId || 'auto', date, enabled: enabled && !!date });
 
-      console.log('📅 Fetching inspections for date:', { userId: userId || 'ALL', date });
-
-      // Get auth token
-      const token = getAuthToken();
-
-      if (!token) {
-        throw new Error('No authentication token');
-      }
-
-      // Build API URL
-      let apiUrl = `/api/reports?date=${date}`;
-      if (userId) {
-        apiUrl += `&userId=${userId}`;
-      }
-      // If no userId provided, admin will see ALL, regular users will see their own (backend handles this)
-
-      // Call API endpoint
-      const response = await fetch(apiUrl, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const errorMessage = await parseErrorResponse(response, 'Failed to fetch date inspections');
-        console.error('❌ Error fetching date inspections:', errorMessage);
-        throw new Error(errorMessage);
-      }
-
-      const result = await response.json();
-      const inspections: InspectionReport[] = result.data;
-
-      console.log('✅ Fetched date inspections:', inspections.length);
-
-      return inspections;
+  return trpc.inspection.getByDate.useQuery(
+    {
+      date,
+      userId,
     },
-    // ✅ FIX: Wait for admin check to complete AND date to be selected
-    enabled: enabled && !!date,
-  });
+    {
+      enabled: enabled && !!date,
+    }
+  );
 };

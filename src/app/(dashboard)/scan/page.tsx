@@ -122,7 +122,7 @@ export default function ScanPage() {
       toast.success(`Opening ${(location as any).name}...`);
 
       setShowScanner(false);
-      router.push(`/inspect/${(location as any).id}`);
+      router.push(`/inspection/${(location as any).id}`);
 
     } catch (error) {
       console.error('Scan error:', error);

@@ -25,10 +25,10 @@ const navItems: NavItem[] = [
     path: '/'
   },
   {
-    id: 'history',
+    id: 'reports',
     icon: Calendar,
-    label: 'Riwayat',
-    path: '/history'
+    label: 'Report',
+    path: '/reports'
   },
   {
     id: 'scan',
@@ -59,7 +59,7 @@ export const BottomNav = () => {
 
   const handleScanSuccess = (locationId: string) => {
     setScanModalOpen(false);
-    router.push(`/inspect/${locationId}`);
+    router.push(`/inspection/${locationId}`);
   };
 
   return (
@@ -158,7 +158,7 @@ export const BottomNavMinimal = () => {
 
   const minimalItems = [
     { icon: Home, label: 'Beranda', path: '/' },
-    { icon: Calendar, label: 'Riwayat', path: '/history' },
+    { icon: Calendar, label: 'Report', path: '/reports' },
     { icon: QrCode, label: 'Pindai', path: '/scan' },
     { icon: MapPin, label: 'Lokasi', path: '/locations' },
     { icon: User, label: 'Profil', path: '/profile' },
@@ -204,7 +204,7 @@ export const BottomNavLivin = () => {
 
   const livinItems = [
     { icon: Home, label: 'Beranda', path: '/' },
-    { icon: Calendar, label: 'Riwayat', path: '/history' },
+    { icon: Calendar, label: 'Report', path: '/reports' },
     { icon: QrCode, label: 'Scan', path: '/scan', isCenter: true },
     { icon: MapPin, label: 'Lokasi', path: '/locations' },
     { icon: User, label: 'Profil', path: '/profile' },

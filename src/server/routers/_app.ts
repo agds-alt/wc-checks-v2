@@ -6,6 +6,7 @@ import { organizationRouter } from './organization';
 import { buildingRouter } from './building';
 import { locationRouter } from './location';
 import { inspectionRouter } from './inspection';
+import { templateRouter } from './template';
 
 export const appRouter = router({
   auth: authRouter,
@@ -14,6 +15,7 @@ export const appRouter = router({
   building: buildingRouter,
   location: locationRouter,
   inspection: inspectionRouter,
+  template: templateRouter,
 });
 
 // Export type router type signature,

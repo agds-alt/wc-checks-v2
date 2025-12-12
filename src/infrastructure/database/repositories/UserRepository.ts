@@ -18,13 +18,24 @@ export class UserRepository implements IUserRepository {
   }
 
   async findByEmail(email: string): Promise<User | null> {
+    console.log('🔍 UserRepository.findByEmail called with:', email);
+
     const { data, error } = await this.supabase
       .from('users')
       .select('*')
       .eq('email', email)
       .single();
 
-    if (error || !data) return null;
+    console.log('🔍 Supabase query result:');
+    console.log('  Error:', error ? JSON.stringify(error, null, 2) : 'null');
+    console.log('  Data:', data ? 'EXISTS' : 'null');
+
+    if (error || !data) {
+      console.log('❌ findByEmail failed:', error?.message || 'No data returned');
+      return null;
+    }
+
+    console.log('✅ User found in database:', data.email);
     return this.mapToEntity(data);
   }
 

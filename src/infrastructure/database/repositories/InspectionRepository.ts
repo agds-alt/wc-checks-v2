@@ -41,13 +41,19 @@ export class InspectionRepository implements IInspectionRepository {
     return data.map(this.mapToEntity);
   }
 
-  async findByDateRange(startDate: Date, endDate: Date): Promise<Inspection[]> {
-    const { data, error } = await this.supabase
+  async findByDateRange(startDate: Date, endDate: Date, userId?: string): Promise<Inspection[]> {
+    let query = this.supabase
       .from('inspections')
       .select('*')
       .gte('inspection_date', startDate.toISOString())
-      .lte('inspection_date', endDate.toISOString())
-      .order('inspection_date', { ascending: false });
+      .lte('inspection_date', endDate.toISOString());
+
+    // Filter by userId if provided
+    if (userId) {
+      query = query.eq('inspector_id', userId);
+    }
+
+    const { data, error } = await query.order('inspection_date', { ascending: false });
 
     if (error || !data) return [];
     return data.map(this.mapToEntity);

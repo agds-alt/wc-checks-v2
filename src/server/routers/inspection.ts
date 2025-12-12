@@ -105,7 +105,57 @@ export const inspectionRouter = router({
     }),
 
   /**
-   * Create inspection
+   * Create inspection record (from mobile form)
+   */
+  submitRecord: protectedProcedure
+    .input(
+      z.object({
+        location_id: z.string(),
+        template_id: z.string(),
+        inspection_date: z.string(), // Format: YYYY-MM-DD
+        inspection_time: z.string(), // Format: HH:MM:SS
+        inspection_data: z.any(), // JSON with ratings, photos, etc.
+        overall_rating: z.number(),
+        status: z.string(),
+        notes: z.string().optional(),
+        duration_minutes: z.number().optional(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { data, error } = await inspectionRepo['supabase']
+        .from('inspection_records')
+        .insert({
+          location_id: input.location_id,
+          inspector_id: ctx.user.userId,
+          template_id: input.template_id,
+          inspection_date: input.inspection_date,
+          inspection_time: input.inspection_time,
+          inspection_data: input.inspection_data,
+          overall_rating: input.overall_rating,
+          status: input.status,
+          notes: input.notes,
+          duration_minutes: input.duration_minutes,
+          created_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (error) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: `Failed to create inspection: ${error.message}`,
+        });
+      }
+
+      // Invalidate cache
+      await cacheService.delPattern(`inspection:*`);
+      await cacheService.delPattern(`location:*`);
+
+      return data;
+    }),
+
+  /**
+   * Create inspection (legacy - for components-based)
    */
   create: protectedProcedure
     .input(
@@ -195,5 +245,142 @@ export const inspectionRouter = router({
     )
     .query(async ({ input }) => {
       return inspectionRepo.list(input.limit, input.offset);
+    }),
+
+  /**
+   * Get monthly report (aggregated by date)
+   * Admin (role >= 80) can see all users, regular users see only their own
+   */
+  getMonthlyReport: protectedProcedure
+    .input(
+      z.object({
+        month: z.string(), // Format: YYYY-MM
+        userId: z.string().optional(), // Optional filter by user
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      console.log('📊 [tRPC] getMonthlyReport called:', {
+        month: input.month,
+        requestedUserId: input.userId,
+        currentUser: ctx.user.userId,
+        userRole: ctx.user.role,
+      });
+
+      // Determine filter userId based on role
+      let filterUserId: string | undefined;
+
+      if (ctx.user.role >= 80) {
+        // Admin: can see all users or specific user if requested
+        filterUserId = input.userId;
+        console.log('📊 [tRPC] Admin access - filtering by:', filterUserId || 'ALL USERS');
+      } else {
+        // Regular user: can only see their own data
+        filterUserId = ctx.user.userId;
+        console.log('📊 [tRPC] Regular user - filtering by own ID:', filterUserId);
+      }
+
+      // Parse month to start/end dates
+      const [year, month] = input.month.split('-').map(Number);
+      const startDate = new Date(year, month - 1, 1);
+      const endDate = new Date(year, month, 0, 23, 59, 59); // Last day of month
+
+      console.log('📊 [tRPC] Date range:', {
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+      });
+
+      // Fetch inspections from repository
+      const inspections = await inspectionRepo.findByDateRange(
+        startDate,
+        endDate,
+        filterUserId
+      );
+
+      console.log('📊 [tRPC] Found inspections:', inspections.length);
+
+      // Group by date and calculate stats
+      const dateMap = new Map<string, any[]>();
+
+      inspections.forEach((inspection: any) => {
+        const date = inspection.inspection_date.split('T')[0]; // Get YYYY-MM-DD
+        if (!dateMap.has(date)) {
+          dateMap.set(date, []);
+        }
+        dateMap.get(date)!.push(inspection);
+      });
+
+      // Format response
+      const result = Array.from(dateMap.entries()).map(([date, dayInspections]) => {
+        const totalScore = dayInspections.reduce(
+          (sum, i) => sum + (i.overall_rating || 0),
+          0
+        );
+        const avgScore = dayInspections.length > 0
+          ? Math.round((totalScore / dayInspections.length) * 25) // Convert to 0-100 scale
+          : 0;
+
+        return {
+          date,
+          count: dayInspections.length,
+          averageScore: avgScore,
+        };
+      });
+
+      console.log('📊 [tRPC] Returning aggregated data:', result.length, 'dates');
+
+      return result;
+    }),
+
+  /**
+   * Get inspections for specific date
+   * Admin (role >= 80) can see all users, regular users see only their own
+   */
+  getByDate: protectedProcedure
+    .input(
+      z.object({
+        date: z.string(), // Format: YYYY-MM-DD
+        userId: z.string().optional(), // Optional filter by user
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      console.log('📅 [tRPC] getByDate called:', {
+        date: input.date,
+        requestedUserId: input.userId,
+        currentUser: ctx.user.userId,
+        userRole: ctx.user.role,
+      });
+
+      // Determine filter userId based on role
+      let filterUserId: string | undefined;
+
+      if (ctx.user.role >= 80) {
+        // Admin: can see all users or specific user if requested
+        filterUserId = input.userId;
+        console.log('📅 [tRPC] Admin access - filtering by:', filterUserId || 'ALL USERS');
+      } else {
+        // Regular user: can only see their own data
+        filterUserId = ctx.user.userId;
+        console.log('📅 [tRPC] Regular user - filtering by own ID:', filterUserId);
+      }
+
+      // Parse date to start/end of day
+      const startDate = new Date(input.date + 'T00:00:00');
+      const endDate = new Date(input.date + 'T23:59:59');
+
+      console.log('📅 [tRPC] Date range:', {
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+      });
+
+      // Fetch inspections from repository
+      const inspections = await inspectionRepo.findByDateRange(
+        startDate,
+        endDate,
+        filterUserId
+      );
+
+      console.log('📅 [tRPC] Found inspections:', inspections.length);
+
+      return inspections;
     }),
 });

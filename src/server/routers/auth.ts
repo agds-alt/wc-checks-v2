@@ -28,7 +28,16 @@ export const authRouter = router({
       // Query database for user
       const user = await userRepo.findByEmail(input.email);
 
+      console.log('🔍 User found:', user ? 'YES' : 'NO');
+      console.log('🔍 User data:', JSON.stringify({
+        id: user?.id,
+        email: user?.email,
+        has_password_hash: !!user?.password_hash,
+        password_hash_length: user?.password_hash?.length || 0,
+      }, null, 2));
+
       if (!user || !user.password_hash) {
+        console.log('❌ Login failed: User not found or no password hash');
         throw new TRPCError({
           code: 'UNAUTHORIZED',
           message: 'Invalid credentials',

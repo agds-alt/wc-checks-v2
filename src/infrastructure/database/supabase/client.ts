@@ -6,7 +6,12 @@ export function getSupabaseServerClient() {
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
 
+  console.log('🔍 Supabase Server Client Environment Check:');
+  console.log('  SUPABASE_URL:', supabaseUrl ? `${supabaseUrl.substring(0, 30)}...` : 'MISSING');
+  console.log('  SUPABASE_SERVICE_KEY:', supabaseServiceKey ? 'EXISTS' : 'MISSING');
+
   if (!supabaseUrl || !supabaseServiceKey) {
+    console.error('❌ Missing Supabase environment variables!');
     throw new Error('Missing Supabase environment variables');
   }
 
