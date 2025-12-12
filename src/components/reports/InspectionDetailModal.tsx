@@ -178,12 +178,12 @@ export const InspectionDetailModal = ({
                   🚽
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-2xl font-bold mb-1">{inspection.location?.name}</h2>
+                  <h2 className="text-2xl font-bold mb-1">{(inspection as any).locations?.name || (inspection as any).location?.name || 'Lokasi tidak diketahui'}</h2>
                   <div className="flex items-center space-x-2 text-white/90 text-sm">
                     <MapPin className="w-4 h-4" />
-                    <span>{inspection.location?.building}</span>
+                    <span>{(inspection as any).locations?.buildings?.name || (inspection as any).location?.building || 'N/A'}</span>
                     <span>•</span>
-                    <span>{inspection.location?.floor}</span>
+                    <span>{(inspection as any).locations?.floor || (inspection as any).location?.floor || 'N/A'}</span>
                   </div>
                 </div>
               </div>

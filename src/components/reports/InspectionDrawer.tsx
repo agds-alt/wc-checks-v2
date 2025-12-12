@@ -139,6 +139,12 @@ export const InspectionDrawer = ({
             const scoreColor = getScoreColor(score);
             const emoji = getScoreEmoji(score);
 
+            // ✅ Handle both 'location' and 'locations' structures safely
+            const locationData = (inspection as any).location || (inspection as any).locations;
+            const locationName = locationData?.name || 'Lokasi tidak diketahui';
+            const buildingName = locationData?.buildings?.name || locationData?.building || '';
+            const floor = locationData?.floor || '';
+
             return (
               <button
                 key={inspection.id}
@@ -151,14 +157,14 @@ export const InspectionDrawer = ({
                     <div className="flex items-center space-x-2 mb-2">
                       <MapPin className="w-4 h-4 text-blue-600 flex-shrink-0" />
                       <h3 className="font-semibold text-gray-900 truncate">
-                        {inspection.location.name}
+                        {locationName}
                       </h3>
                     </div>
 
                     <div className="text-sm text-gray-600 space-y-1">
-                      {inspection.location.building && (
+                      {buildingName && (
                         <p className="truncate">
-                          🏢 {inspection.location.building} • {inspection.location.floor}
+                          🏢 {buildingName}{floor && ` • ${floor}`}
                         </p>
                       )}
                       <div className="flex items-center space-x-1">
@@ -168,7 +174,7 @@ export const InspectionDrawer = ({
                     </div>
 
                     {/* Photos indicator */}
-                    {inspection.photo_urls.length > 0 && (
+                    {inspection.photo_urls && inspection.photo_urls.length > 0 && (
                       <div className="mt-2">
                         <span className="text-xs text-gray-500">
                           📸 {inspection.photo_urls.length} foto
