@@ -15,6 +15,7 @@ interface PhotoWithMetadata {
       road?: string;
       village?: string;
       suburb?: string;
+      city_district?: string; // Kecamatan
       city?: string;
       postcode?: string;
     };
@@ -270,6 +271,7 @@ const getAddressFromCoords = async (lat: number, lng: number): Promise<{
     road?: string;
     village?: string;
     suburb?: string;
+    city_district?: string; // Kecamatan
     city?: string;
     postcode?: string;
   }
@@ -302,7 +304,8 @@ const getAddressFromCoords = async (lat: number, lng: number): Promise<{
       details: {
         road: addr.road || addr.street || addr.footway,
         village: addr.village || addr.hamlet || addr.neighbourhood,
-        suburb: addr.suburb || addr.subdistrict || addr.district,
+        suburb: addr.suburb || addr.subdistrict,
+        city_district: addr.city_district || addr.district, // Kecamatan
         city: addr.city || addr.town || addr.municipality || addr.county,
         postcode: addr.postcode,
       }
@@ -362,14 +365,14 @@ const createPhotoWithOverlay = async (
         // Draw image
         ctx.drawImage(img, 0, 0);
 
-        // ✅ Improved overlay - 80% transparent (0.2 alpha)
+        // ✅ Improved overlay - 90% transparent (0.1 alpha)
         const overlayHeight = metadata.location?.addressDetails ? 100 : 60;
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; // 80% transparent
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'; // 90% transparent
         ctx.fillRect(0, canvas.height - overlayHeight, canvas.width, overlayHeight);
 
-        // ✅ Add border - also 80% transparent
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
-        ctx.lineWidth = 2;
+        // ✅ Add border - also 90% transparent
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+        ctx.lineWidth = 1;
         ctx.strokeRect(0, canvas.height - overlayHeight, canvas.width, overlayHeight);
 
         // ✅ Thin font (not bold)
@@ -394,13 +397,14 @@ const createPhotoWithOverlay = async (
             if (addr.road) addressParts.push(addr.road);
             if (addr.village) addressParts.push(addr.village);
             if (addr.suburb) addressParts.push(addr.suburb);
+            if (addr.city_district) addressParts.push(`Kec. ${addr.city_district}`); // Kecamatan
             if (addr.city) addressParts.push(addr.city);
             if (addr.postcode) addressParts.push(addr.postcode);
 
             const fullAddress = addressParts.join(', ');
 
-            // ✅ Maximize width - use full canvas width minus padding
-            const maxWidth = canvas.width - 20;
+            // ✅ Maximize width - use full canvas width with minimal padding
+            const maxWidth = canvas.width - 15; // Reduced padding from 20 to 15
             ctx.font = '300 12px Arial';
 
             // Split address into multiple lines if too long
