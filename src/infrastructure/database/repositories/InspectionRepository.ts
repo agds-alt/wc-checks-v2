@@ -8,7 +8,7 @@ export class InspectionRepository implements IInspectionRepository {
 
   async findById(id: string): Promise<Inspection | null> {
     const { data, error } = await this.supabase
-      .from('inspections')
+      .from('inspection_records')
       .select('*')
       .eq('id', id)
       .single();
@@ -19,8 +19,19 @@ export class InspectionRepository implements IInspectionRepository {
 
   async findByLocation(locationId: string, limit: number = 50): Promise<Inspection[]> {
     const { data, error } = await this.supabase
-      .from('inspections')
-      .select('*')
+      .from('inspection_records')
+      .select(`
+        *,
+        locations (
+          id,
+          name,
+          floor,
+          buildings (
+            id,
+            name
+          )
+        )
+      `)
       .eq('location_id', locationId)
       .order('inspection_date', { ascending: false })
       .limit(limit);
@@ -31,8 +42,19 @@ export class InspectionRepository implements IInspectionRepository {
 
   async findByInspector(inspectorId: string, limit: number = 50): Promise<Inspection[]> {
     const { data, error } = await this.supabase
-      .from('inspections')
-      .select('*')
+      .from('inspection_records')
+      .select(`
+        *,
+        locations (
+          id,
+          name,
+          floor,
+          buildings (
+            id,
+            name
+          )
+        )
+      `)
       .eq('inspector_id', inspectorId)
       .order('inspection_date', { ascending: false })
       .limit(limit);
@@ -43,8 +65,19 @@ export class InspectionRepository implements IInspectionRepository {
 
   async findByDateRange(startDate: Date, endDate: Date, userId?: string): Promise<Inspection[]> {
     let query = this.supabase
-      .from('inspections')
-      .select('*')
+      .from('inspection_records')
+      .select(`
+        *,
+        locations (
+          id,
+          name,
+          floor,
+          buildings (
+            id,
+            name
+          )
+        )
+      `)
       .gte('inspection_date', startDate.toISOString())
       .lte('inspection_date', endDate.toISOString());
 
@@ -64,7 +97,7 @@ export class InspectionRepository implements IInspectionRepository {
 
     // Insert inspection
     const { data: inspection, error: inspectionError } = await this.supabase
-      .from('inspections')
+      .from('inspection_records')
       .insert([inspectionData])
       .select()
       .single();
@@ -98,7 +131,7 @@ export class InspectionRepository implements IInspectionRepository {
 
   async update(id: string, input: UpdateInspectionInput): Promise<Inspection> {
     const { data, error } = await this.supabase
-      .from('inspections')
+      .from('inspection_records')
       .update(input)
       .eq('id', id)
       .select()
@@ -120,7 +153,7 @@ export class InspectionRepository implements IInspectionRepository {
 
     // Delete inspection
     const { error } = await this.supabase
-      .from('inspections')
+      .from('inspection_records')
       .delete()
       .eq('id', id);
 
@@ -141,8 +174,19 @@ export class InspectionRepository implements IInspectionRepository {
 
   async list(limit: number = 1000, offset: number = 0): Promise<Inspection[]> {
     const { data, error } = await this.supabase
-      .from('inspections')
-      .select('*')
+      .from('inspection_records')
+      .select(`
+        *,
+        locations (
+          id,
+          name,
+          floor,
+          buildings (
+            id,
+            name
+          )
+        )
+      `)
       .order('inspection_date', { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -160,11 +204,14 @@ export class InspectionRepository implements IInspectionRepository {
       template_id: data.template_id,
       inspection_data: data.inspection_data,
       overall_rating: data.overall_rating,
+      overall_status: data.overall_status || data.status, // Support both field names
       duration_minutes: data.duration_minutes,
       status: data.status,
       notes: data.notes,
       created_at: data.created_at ? new Date(data.created_at) : null,
       updated_at: data.updated_at ? new Date(data.updated_at) : null,
+      locations: data.locations, // Pass through location data for dashboard
+      responses: data.responses || data.inspection_data, // Support both field names
     };
   }
 
