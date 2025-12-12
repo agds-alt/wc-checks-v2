@@ -11,6 +11,13 @@ interface PhotoWithMetadata {
     lat: number;
     lng: number;
     address?: string;
+    addressDetails?: {
+      road?: string;
+      village?: string;
+      suburb?: string;
+      city?: string;
+      postcode?: string;
+    };
   };
 }
 
@@ -42,26 +49,33 @@ export const EnhancedPhotoUpload = ({
       // Get current location
       const location = await getCurrentLocation();
 
-      // ✅ NON-BLOCKING reverse geocoding (don't await, just start it)
-      let address: string | undefined = undefined;
+      // ✅ BLOCKING reverse geocoding - wait for address to add to watermark
+      let addressData: { address?: string; addressDetails?: any } = {};
       if (location) {
-        // Fire and forget - we'll use GPS coords if address fails
-        getAddressFromCoords(location.lat, location.lng)
-          .then(addr => { address = addr; })
-          .catch(() => { /* Silent fail - GPS coords still available */ });
+        try {
+          const geocodeResult = await getAddressFromCoords(location.lat, location.lng);
+          if (geocodeResult) {
+            addressData = {
+              address: geocodeResult.displayName,
+              addressDetails: geocodeResult.details,
+            };
+          }
+        } catch (error) {
+          console.warn('⚠️ Geocoding failed, using GPS coords only');
+        }
       }
 
-      // Create preview with overlay immediately (don't wait for address)
+      // Create preview with overlay (with address if available)
       const preview = await createPhotoWithOverlay(file, {
         timestamp: new Date().toISOString(),
-        location: location ? { ...location, address } : undefined,
+        location: location ? { ...location, ...addressData } : undefined,
       });
 
       const photoMetadata: PhotoWithMetadata = {
         file,
         preview,
         timestamp: new Date().toISOString(),
-        location: location ? { ...location, address } : undefined,
+        location: location ? { ...location, ...addressData } : undefined,
       };
 
       onPhotosChange([...photos, photoMetadata]);
@@ -250,14 +264,23 @@ const getCurrentLocation = (): Promise<{ lat: number; lng: number } | null> => {
   });
 };
 
-const getAddressFromCoords = async (lat: number, lng: number): Promise<string | undefined> => {
+const getAddressFromCoords = async (lat: number, lng: number): Promise<{
+  displayName: string;
+  details: {
+    road?: string;
+    village?: string;
+    suburb?: string;
+    city?: string;
+    postcode?: string;
+  }
+} | undefined> => {
   try {
     // ✅ Add timeout protection - fail fast after 3 seconds
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 3000);
 
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`,
       {
         headers: { 'User-Agent': 'ToiletCheck/1.0' },
         signal: controller.signal,
@@ -272,7 +295,18 @@ const getAddressFromCoords = async (lat: number, lng: number): Promise<string | 
     }
 
     const data = await response.json();
-    return data.display_name;
+    const addr = data.address || {};
+
+    return {
+      displayName: data.display_name,
+      details: {
+        road: addr.road || addr.street || addr.footway,
+        village: addr.village || addr.hamlet || addr.neighbourhood,
+        suburb: addr.suburb || addr.subdistrict || addr.district,
+        city: addr.city || addr.town || addr.municipality || addr.county,
+        postcode: addr.postcode,
+      }
+    };
   } catch (error: any) {
     // ✅ Silent fail - GPS coordinates are enough
     if (error.name === 'AbortError') {
@@ -328,21 +362,73 @@ const createPhotoWithOverlay = async (
         // Draw image
         ctx.drawImage(img, 0, 0);
 
-        // Add overlay
-        const overlayHeight = 60;
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+        // ✅ Improved overlay - 80% transparent (0.2 alpha)
+        const overlayHeight = metadata.location?.addressDetails ? 100 : 60;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; // 80% transparent
         ctx.fillRect(0, canvas.height - overlayHeight, canvas.width, overlayHeight);
 
-        // Add text
+        // ✅ Add border - also 80% transparent
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(0, canvas.height - overlayHeight, canvas.width, overlayHeight);
+
+        // ✅ Thin font (not bold)
         ctx.fillStyle = 'white';
-        ctx.font = 'bold 16px Arial';
+        ctx.font = '300 14px Arial'; // Thin weight
 
         const timestamp = format(new Date(metadata.timestamp), 'dd/MM/yyyy HH:mm:ss');
-        ctx.fillText(timestamp, 10, canvas.height - 35);
+        let yPos = canvas.height - overlayHeight + 20;
 
+        // Timestamp
+        ctx.fillText(`🕐 ${timestamp}`, 10, yPos);
+
+        // Location details
         if (metadata.location) {
-          ctx.font = '14px Arial';
-          ctx.fillText(`📍 ${metadata.location.lat.toFixed(5)}, ${metadata.location.lng.toFixed(5)}`, 10, canvas.height - 10);
+          yPos += 18;
+
+          // Address details if available
+          if (metadata.location.addressDetails) {
+            const addr = metadata.location.addressDetails;
+            const addressParts: string[] = [];
+
+            if (addr.road) addressParts.push(addr.road);
+            if (addr.village) addressParts.push(addr.village);
+            if (addr.suburb) addressParts.push(addr.suburb);
+            if (addr.city) addressParts.push(addr.city);
+            if (addr.postcode) addressParts.push(addr.postcode);
+
+            const fullAddress = addressParts.join(', ');
+
+            // ✅ Maximize width - use full canvas width minus padding
+            const maxWidth = canvas.width - 20;
+            ctx.font = '300 12px Arial';
+
+            // Split address into multiple lines if too long
+            const words = fullAddress.split(' ');
+            let currentLine = '';
+            let lineY = yPos;
+
+            for (const word of words) {
+              const testLine = currentLine + word + ' ';
+              const metrics = ctx.measureText(testLine);
+
+              if (metrics.width > maxWidth && currentLine !== '') {
+                ctx.fillText(`📍 ${currentLine.trim()}`, 10, lineY);
+                currentLine = word + ' ';
+                lineY += 16;
+              } else {
+                currentLine = testLine;
+              }
+            }
+            // Draw remaining text
+            if (currentLine.trim()) {
+              ctx.fillText(currentLine === fullAddress ? `📍 ${currentLine.trim()}` : currentLine.trim(), 10, lineY);
+            }
+          } else {
+            // Fallback to GPS coordinates
+            ctx.font = '300 12px Arial';
+            ctx.fillText(`📍 ${metadata.location.lat.toFixed(5)}, ${metadata.location.lng.toFixed(5)}`, 10, yPos);
+          }
         }
 
         resolve(canvas.toDataURL('image/jpeg', 0.9));
