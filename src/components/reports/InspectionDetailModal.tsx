@@ -134,6 +134,17 @@ export const InspectionDetailModal = ({
   const maintenance = responses?.maintenance;
   const inspectionMode = responses?.inspection_mode || 'professional';
 
+  // ✅ Photos are stored in inspection_data.photos, not photo_urls
+  const photoUrls = responses?.photos || inspection.photo_urls || [];
+
+  // 🔍 DEBUG: Log the ratings data to understand the structure
+  console.log('📊 [InspectionDetailModal] Inspection data:', {
+    responses,
+    ratings,
+    photoUrls,
+    inspectionData: (inspection as any).inspection_data,
+  });
+
   const formattedDate = format(new Date(inspection.inspection_date), 'EEEE, MMMM d, yyyy');
 
   const handlePhotoClick = (index: number) => {
@@ -261,9 +272,42 @@ export const InspectionDetailModal = ({
                 <span>Penilaian Komponen</span>
               </h3>
               <div className="space-y-3">
+                {ratings.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>Tidak ada data penilaian komponen</p>
+                  </div>
+                )}
                 {ratings.map((rating: ComponentRating, index: number) => {
                   const component = INSPECTION_COMPONENTS.find(c => c.id === rating.component);
-                  if (!component) return null;
+
+                  // ✅ Handle missing component gracefully
+                  if (!component) {
+                    console.warn('⚠️ Component not found for rating:', rating);
+                    return (
+                      <div key={index} className="rounded-xl p-4 border-2 bg-gray-50 border-gray-200">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <span className="text-xl">❓</span>
+                              <span className="font-medium text-gray-900">
+                                {rating.component || 'Komponen tidak diketahui'}
+                              </span>
+                            </div>
+                            {rating.notes && (
+                              <p className="text-sm text-gray-600 mt-2 pl-7">
+                                💬 {rating.notes}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex items-center space-x-1 flex-shrink-0 ml-3">
+                            <span className="text-sm font-medium text-gray-600">
+                              {rating.choice || 'N/A'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
 
                   return (
                     <div key={index} className={`rounded-xl p-4 border-2 ${getChoiceColor(rating.choice)}`}>
@@ -339,14 +383,14 @@ export const InspectionDetailModal = ({
             )}
 
             {/* Photos */}
-            {inspection.photo_urls && inspection.photo_urls.length > 0 && (
+            {photoUrls && photoUrls.length > 0 && (
               <div>
                 <h3 className="font-bold text-gray-900 mb-3 flex items-center space-x-2">
                   <Camera className="w-5 h-5" />
-                  <span>Foto Dokumentasi ({inspection.photo_urls.length})</span>
+                  <span>Foto Dokumentasi ({photoUrls.length})</span>
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 place-items-center">
-                  {inspection.photo_urls.map((url, idx) => (
+                  {photoUrls.map((url, idx) => (
                     <button
                       key={idx}
                       onClick={() => handlePhotoClick(idx)}
@@ -392,7 +436,7 @@ export const InspectionDetailModal = ({
       <PhotoReviewModal
         isOpen={photoReviewOpen}
         onClose={() => setPhotoReviewOpen(false)}
-        photos={inspection.photo_urls || []}
+        photos={photoUrls || []}
         initialIndex={selectedPhotoIndex}
       />
     </>

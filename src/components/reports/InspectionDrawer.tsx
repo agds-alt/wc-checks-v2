@@ -145,6 +145,9 @@ export const InspectionDrawer = ({
             const buildingName = locationData?.buildings?.name || locationData?.building || '';
             const floor = locationData?.floor || '';
 
+            // ✅ Photos are in responses.photos, not photo_urls
+            const photoCount = (inspection.responses as any)?.photos?.length || inspection.photo_urls?.length || 0;
+
             return (
               <button
                 key={inspection.id}
@@ -174,10 +177,10 @@ export const InspectionDrawer = ({
                     </div>
 
                     {/* Photos indicator */}
-                    {inspection.photo_urls && inspection.photo_urls.length > 0 && (
+                    {photoCount > 0 && (
                       <div className="mt-2">
                         <span className="text-xs text-gray-500">
-                          📸 {inspection.photo_urls.length} foto
+                          📸 {photoCount} foto
                         </span>
                       </div>
                     )}
