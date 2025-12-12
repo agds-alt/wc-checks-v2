@@ -1,7 +1,7 @@
 // src/hooks/useAuthTRPC.ts - tRPC-based authentication hook
 import { useRouter } from 'next/navigation';
 import { trpc } from '@/lib/trpc/client';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 
 export interface AuthUser {
   id: string;
@@ -89,6 +89,43 @@ export function useAuthTRPC(): UseAuthReturn {
   const refreshProfile = useCallback(async (): Promise<void> => {
     await refetch();
   }, [refetch]);
+
+  // Auto-refresh token mechanism - refresh every 12 hours to keep session alive
+  useEffect(() => {
+    if (!hasToken || !user) return;
+
+    const refreshInterval = setInterval(async () => {
+      const token = localStorage.getItem('sb-auth-token');
+      if (!token) return;
+
+      try {
+        console.log('🔄 Auto-refreshing token...');
+        const response = await fetch('/api/trpc/auth.refresh', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            json: { token },
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const newToken = data.result?.data?.json?.token;
+
+          if (newToken) {
+            localStorage.setItem('sb-auth-token', newToken);
+            console.log('✅ Token refreshed successfully');
+          }
+        }
+      } catch (error) {
+        console.error('❌ Token refresh failed:', error);
+      }
+    }, 12 * 60 * 60 * 1000); // Refresh every 12 hours
+
+    return () => clearInterval(refreshInterval);
+  }, [hasToken, user]);
 
   return {
     user: user || null,
