@@ -1,7 +1,5 @@
-// src/hooks/useAdminStats.ts - Admin Dashboard Statistics via Backend API
-import { useQuery } from '@tanstack/react-query';
-import { getAuthToken } from '../lib/auth';
-import { parseErrorResponse } from '../lib/utils/apiHelpers';
+// src/hooks/useAdminStats.ts - Admin Dashboard Statistics via tRPC
+import { trpc } from '@/lib/trpc/client';
 
 export interface AdminStats {
   totalUsers: number;
@@ -14,31 +12,10 @@ export interface AdminStats {
   inspectionGrowth: number;
 }
 
-// Fetch admin dashboard statistics
+// Fetch admin dashboard statistics via tRPC
 export function useAdminStats() {
-  return useQuery({
-    queryKey: ['admin-stats'],
-    queryFn: async () => {
-      console.log('[useAdminStats] Fetching from backend API...');
-
-      const token = getAuthToken();
-
-      if (!token) throw new Error('No authentication token');
-
-      const response = await fetch('/api/admin/stats', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-
-      if (!response.ok) {
-        const errorMessage = await parseErrorResponse(response, 'Failed to fetch statistics');
-        throw new Error(errorMessage);
-      }
-
-      const result = await response.json();
-      console.log('[useAdminStats] Stats retrieved:', result.data);
-      
-      return result.data as AdminStats;
-    },
+  return trpc.stats.getAdminStats.useQuery(undefined, {
     staleTime: 60 * 1000, // 1 minute
+    refetchOnWindowFocus: false,
   });
 }

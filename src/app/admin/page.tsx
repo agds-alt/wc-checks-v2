@@ -17,18 +17,17 @@ import {
   BarChart3,
   Calendar,
   ArrowLeft,
-  Shield
 } from 'lucide-react';
 import { AdminCard } from '@/components/admin/AdminCard';
 import { Card, CardHeader } from '@/components/ui/Card';
-import { usePerformance } from '@/hooks/usePerformance'
+import { usePerformance } from '@/hooks/usePerformance';
 
 export default function AdminDashboard() {
-   usePerformance('HomePage');
+  usePerformance('AdminDashboard');
   const { profile } = useAuth();
   const router = useRouter();
 
-  // ✅ FIXED: Use backend API for dashboard stats
+  // ✅ Use tRPC for dashboard stats
   const { data: stats, isLoading } = useAdminStats();
 
   if (isLoading) {
@@ -40,10 +39,10 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-8">
-      {/* Header with Gradient */}
-      <div className="bg-gradient-to-br from-purple-600 via-purple-500 to-pink-500 p-6 rounded-b-3xl shadow-lg">
-        <div className="flex items-center justify-between text-white mb-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-500 pb-8">
+      {/* Header with Glass Effect */}
+      <div className="bg-white/10 backdrop-blur-lg p-4 shadow-xl border-b border-white/20">
+        <div className="flex items-center justify-between text-white mb-3">
           <button
             onClick={() => router.back()}
             className="p-2 hover:bg-white/10 rounded-xl transition-colors"
@@ -58,31 +57,39 @@ export default function AdminDashboard() {
           </button>
         </div>
 
-        <div className="flex items-center gap-3 text-white mb-2">
-          <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-            <Shield className="w-7 h-7" />
+        <div className="flex items-center gap-3 text-white">
+          <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center p-1.5">
+            <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-            <p className="text-purple-100">Welcome back, {profile?.full_name}!</p>
+            <h1 className="text-xl font-bold">Admin Dashboard</h1>
+            <p className="text-sm text-blue-100">
+              Welcome, {profile?.full_name?.split(' ')[0] || 'Admin'}
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="px-6 -mt-8">
+      <div className="px-6 pt-4">
         {/* Quick Stats */}
         <div className="grid grid-cols-2 gap-3 mb-6">
           {/* Today's Inspections */}
-          <Card className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-100">
+          <Card className="p-4 bg-white shadow-xl border-0">
             <div className="flex items-center justify-between mb-2">
               <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
                 <Activity className="w-5 h-5 text-blue-600" />
               </div>
               {stats && stats.inspectionGrowth !== 0 && (
-                <div className={`flex items-center gap-1 text-xs font-medium ${
-                  stats.inspectionGrowth > 0 ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {stats.inspectionGrowth > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                <div
+                  className={`flex items-center gap-1 text-xs font-medium ${
+                    stats.inspectionGrowth > 0 ? 'text-green-600' : 'text-red-600'
+                  }`}
+                >
+                  {stats.inspectionGrowth > 0 ? (
+                    <TrendingUp className="w-3 h-3" />
+                  ) : (
+                    <TrendingDown className="w-3 h-3" />
+                  )}
                   <span>{Math.abs(stats.inspectionGrowth)}%</span>
                 </div>
               )}
@@ -92,7 +99,7 @@ export default function AdminDashboard() {
           </Card>
 
           {/* Average Score */}
-          <Card className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 border-green-100">
+          <Card className="p-4 bg-white shadow-xl border-0">
             <div className="flex items-center justify-between mb-2">
               <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
                 <BarChart3 className="w-5 h-5 text-green-600" />
@@ -103,7 +110,7 @@ export default function AdminDashboard() {
           </Card>
 
           {/* Total Users */}
-          <Card className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-100">
+          <Card className="p-4 bg-white shadow-xl border-0">
             <div className="flex items-center justify-between mb-2">
               <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
                 <Users className="w-5 h-5 text-purple-600" />
@@ -114,7 +121,7 @@ export default function AdminDashboard() {
           </Card>
 
           {/* Active Users */}
-          <Card className="p-4 bg-gradient-to-br from-orange-50 to-amber-50 border-orange-100">
+          <Card className="p-4 bg-white shadow-xl border-0">
             <div className="flex items-center justify-between mb-2">
               <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
                 <Activity className="w-5 h-5 text-orange-600" />
@@ -183,14 +190,14 @@ export default function AdminDashboard() {
         </div>
 
         {/* Recent Activity */}
-        <Card>
+        <Card className="bg-white shadow-xl border-0">
           <CardHeader
             title="System Overview"
             subtitle="Key metrics at a glance"
             icon={<Activity className="w-5 h-5 text-blue-600" />}
           />
           <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+            <div className="flex items-center justify-between p-3 bg-blue-50/50 rounded-xl">
               <div className="flex items-center gap-3">
                 <FileText className="w-5 h-5 text-gray-500" />
                 <span className="text-sm font-medium text-gray-900">Total Inspections</span>
@@ -198,7 +205,7 @@ export default function AdminDashboard() {
               <span className="text-lg font-bold text-gray-900">{stats?.totalInspections || 0}</span>
             </div>
 
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+            <div className="flex items-center justify-between p-3 bg-blue-50/50 rounded-xl">
               <div className="flex items-center gap-3">
                 <MapPin className="w-5 h-5 text-gray-500" />
                 <span className="text-sm font-medium text-gray-900">Active Locations</span>
@@ -206,7 +213,7 @@ export default function AdminDashboard() {
               <span className="text-lg font-bold text-gray-900">{stats?.totalLocations || 0}</span>
             </div>
 
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+            <div className="flex items-center justify-between p-3 bg-blue-50/50 rounded-xl">
               <div className="flex items-center gap-3">
                 <Calendar className="w-5 h-5 text-gray-500" />
                 <span className="text-sm font-medium text-gray-900">Today&apos;s Activity</span>
