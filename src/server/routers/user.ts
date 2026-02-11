@@ -3,8 +3,63 @@ import { router, protectedProcedure, adminProcedure } from '../trpc';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { UserRepository } from '@/infrastructure/database/repositories/UserRepository';
+import { createClient } from '@supabase/supabase-js';
 
 const userRepo = new UserRepository();
+
+// Helper to check user limit
+async function checkUserLimit(organizationId: string): Promise<void> {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  // Get organization's current plan
+  const { data: org } = await supabase
+    .from('organizations')
+    .select('current_plan_id')
+    .eq('id', organizationId)
+    .single();
+
+  if (!org?.current_plan_id) {
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Organization plan not found',
+    });
+  }
+
+  // Get plan limits
+  const { data: plan } = await supabase
+    .from('plans')
+    .select('max_users')
+    .eq('id', org.current_plan_id)
+    .single();
+
+  if (!plan) {
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Plan not found',
+    });
+  }
+
+  // -1 means unlimited
+  if (plan.max_users === -1) {
+    return;
+  }
+
+  // Count current users in organization
+  const { count } = await supabase
+    .from('users')
+    .select('*', { count: 'exact', head: true })
+    .eq('organization_id', organizationId);
+
+  if (count !== null && count >= plan.max_users) {
+    throw new TRPCError({
+      code: 'FORBIDDEN',
+      message: `You've reached the maximum number of users (${plan.max_users}) for your plan. Please upgrade to add more team members.`,
+    });
+  }
+}
 
 export const userRouter = router({
   /**
@@ -52,6 +107,11 @@ export const userRouter = router({
       })
     )
     .mutation(async ({ input }) => {
+      // If changing organization, check user limit
+      if (input.organizationId) {
+        await checkUserLimit(input.organizationId);
+      }
+
       const { id, name, ...restData } = input;
       const updateData: any = { ...restData };
       if (name) updateData.full_name = name;

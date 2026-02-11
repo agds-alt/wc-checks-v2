@@ -4,9 +4,64 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { LocationRepository } from '@/infrastructure/database/repositories/LocationRepository';
 import { cacheService } from '@/infrastructure/cache/redis';
+import { createClient } from '@supabase/supabase-js';
 
 const locationRepo = new LocationRepository();
 const CACHE_TTL = 3600; // 1 hour
+
+// Helper to check location limit
+async function checkLocationLimit(organizationId: string): Promise<void> {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  // Get organization's current plan
+  const { data: org } = await supabase
+    .from('organizations')
+    .select('current_plan_id')
+    .eq('id', organizationId)
+    .single();
+
+  if (!org?.current_plan_id) {
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Organization plan not found',
+    });
+  }
+
+  // Get plan limits
+  const { data: plan } = await supabase
+    .from('plans')
+    .select('max_locations')
+    .eq('id', org.current_plan_id)
+    .single();
+
+  if (!plan) {
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Plan not found',
+    });
+  }
+
+  // -1 means unlimited
+  if (plan.max_locations === -1) {
+    return;
+  }
+
+  // Count current locations
+  const { count } = await supabase
+    .from('locations')
+    .select('*', { count: 'exact', head: true })
+    .eq('organization_id', organizationId);
+
+  if (count !== null && count >= plan.max_locations) {
+    throw new TRPCError({
+      code: 'FORBIDDEN',
+      message: `You've reached the maximum number of locations (${plan.max_locations}) for your plan. Please upgrade to add more locations.`,
+    });
+  }
+}
 
 export const locationRouter = router({
   /**
@@ -100,6 +155,9 @@ export const locationRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
+      // Check location limit before creating
+      await checkLocationLimit(ctx.user.organizationId);
+
       const location = await locationRepo.create({
         code: `LOC-${Date.now()}`, // Auto-generate code
         qr_code: input.qrCode,

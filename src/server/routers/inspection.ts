@@ -4,9 +4,72 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { InspectionRepository } from '@/infrastructure/database/repositories/InspectionRepository';
 import { cacheService } from '@/infrastructure/cache/redis';
+import { createClient } from '@supabase/supabase-js';
 
 const inspectionRepo = new InspectionRepository();
 const CACHE_TTL = 1800; // 30 minutes (inspections change frequently)
+
+// Helper to check inspection limit
+async function checkInspectionLimit(organizationId: string): Promise<void> {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  // Get organization's current plan
+  const { data: org } = await supabase
+    .from('organizations')
+    .select('current_plan_id')
+    .eq('id', organizationId)
+    .single();
+
+  if (!org?.current_plan_id) {
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Organization plan not found',
+    });
+  }
+
+  // Get plan limits
+  const { data: plan } = await supabase
+    .from('plans')
+    .select('max_inspections_per_month')
+    .eq('id', org.current_plan_id)
+    .single();
+
+  if (!plan) {
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Plan not found',
+    });
+  }
+
+  // null or -1 means unlimited
+  if (!plan.max_inspections_per_month || plan.max_inspections_per_month === -1) {
+    return;
+  }
+
+  // Get start and end of current month
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
+  // Count inspections this month for this organization
+  // Join with locations to filter by organization
+  const { count } = await supabase
+    .from('inspection_records')
+    .select('*, locations!inner(organization_id)', { count: 'exact', head: true })
+    .eq('locations.organization_id', organizationId)
+    .gte('inspection_date', startOfMonth.toISOString().split('T')[0])
+    .lte('inspection_date', endOfMonth.toISOString().split('T')[0]);
+
+  if (count !== null && count >= plan.max_inspections_per_month) {
+    throw new TRPCError({
+      code: 'FORBIDDEN',
+      message: `You've reached the maximum number of inspections (${plan.max_inspections_per_month}) for this month. Please upgrade your plan.`,
+    });
+  }
+}
 
 export const inspectionRouter = router({
   /**
@@ -122,6 +185,9 @@ export const inspectionRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
+      // Check inspection limit before creating
+      await checkInspectionLimit(ctx.user.organizationId);
+
       const { data, error } = await inspectionRepo['supabase']
         .from('inspection_records')
         .insert({
@@ -174,6 +240,9 @@ export const inspectionRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
+      // Check inspection limit before creating
+      await checkInspectionLimit(ctx.user.organizationId);
+
       const inspection = await inspectionRepo.create({
         location_id: input.locationId,
         inspector_id: ctx.user.userId,
